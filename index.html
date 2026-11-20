@@ -303,6 +303,8 @@
     const unlockedMembers = new Set();
     let pendingGateAction = null;
     let isSyncingNow = false;
+    // Track recent local writes so background polling never overwrites fresh edits
+    const localEditGuard = {}; // memberId -> timestamp
 
     const STATUSES = {
       working:  { ko: '열일 중', es: 'Trabajando', emoji: '💻', badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
@@ -369,8 +371,8 @@
       { ko: '금방 돌아옵니다 🏃', es: 'Vuelvo enseguida 🏃' }
     ];
 
-    let members = JSON.parse(localStorage.getItem('quito_members_v5') || '[]');
-    let activityLogs = JSON.parse(localStorage.getItem('quito_logs_v5') || '[]');
+    let members = JSON.parse(localStorage.getItem('quito_members_v6') || '[]');
+    let activityLogs = JSON.parse(localStorage.getItem('quito_logs_v6') || '[]');
 
     function getQuitoNow() {
       const now = new Date();
@@ -466,14 +468,23 @@
       };
     }
 
+    // Parse updatedAt safely (handles numeric epoch ms or ISO string from sheet)
+    function parseTimestampMs(val) {
+      if (!val) return 0;
+      const num = Number(val);
+      if (!isNaN(num) && num > 1000000000000) return num;
+      const d = new Date(String(val));
+      return !isNaN(d.getTime()) ? d.getTime() : 0;
+    }
+
     function getLiveTotals(m) {
       const todayKey = getQuitoNow().dayKey;
       if (m.totals && m.totals.dayKey && m.totals.dayKey !== todayKey) {
         m.totals = emptyTotals();
       }
       const base = { ...emptyTotals(), ...(m.totals || {}) };
-      const ts = Number(m.updatedAt);
-      if (m.status && m.status !== 'off' && !isNaN(ts) && ts > 0) {
+      const ts = parseTimestampMs(m.updatedAt);
+      if (m.status && m.status !== 'off' && ts > 0) {
         const elapsedSec = Math.max(0, (Date.now() - ts) / 1000);
         if (base[m.status] !== undefined && elapsedSec < 86400) {
           base[m.status] += elapsedSec;
@@ -488,8 +499,8 @@
         m.totals = emptyTotals();
       }
       m.totals.dayKey = todayKey;
-      const ts = Number(m.updatedAt);
-      if (m.status && m.status !== 'off' && !isNaN(ts) && ts > 0) {
+      const ts = parseTimestampMs(m.updatedAt);
+      if (m.status && m.status !== 'off' && ts > 0) {
         const elapsedSec = Math.max(0, (Date.now() - ts) / 1000);
         if (m.totals[m.status] !== undefined && elapsedSec < 86400) {
           m.totals[m.status] = Math.round((Number(m.totals[m.status]) || 0) + elapsedSec);
@@ -515,7 +526,7 @@
       }
       pendingGateAction = { memberId, actionType };
       document.getElementById('pinGateTitle').textContent = `🔒 ${m.name} · 본인 확인`;
-      document.getElementById('pinGateSub').textContent = '잠금 설정된 프로필입니다. 4자리 PIN을 입력해 주세요.';
+      document.getElementById('pinGateSub').textContent = '잠금 설정된 카드입니다. 4자리 PIN을 입력해 주세요.';
       document.getElementById('pinGateInput').value = '';
       document.getElementById('pinGateError').textContent = '';
       openModal('pinGateModal');
@@ -858,11 +869,11 @@
 
             <div class="mt-2.5 flex items-center gap-2">
               ${m.status !== 'working' ? `
-                <button type="button" onclick="requireAuthAndRun('${m.id}', 'quickReturn')" class="flex-1 py-1.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-2xs transition">
+                <button type="button" onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'quickReturn')" class="flex-1 py-1.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-2xs transition">
                   🏢 ${t('사무실 복귀! (출근)', 'Volver a oficina')}
                 </button>
               ` : `
-                <button type="button" onclick="requireAuthAndRun('${m.id}', 'status')" class="flex-1 py-1.5 px-3 rounded-xl bg-white hover:bg-amber-100/70 text-slate-700 border border-slate-200 text-xs font-bold transition">
+                <button type="button" onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'status')" class="flex-1 py-1.5 px-3 rounded-xl bg-white hover:bg-amber-100/70 text-slate-700 border border-slate-200 text-xs font-bold transition">
                   ${hasPin && !isUnlocked ? '🔒' : '✨'} ${t('상태 변경', 'Cambiar estado')}
                 </button>
               `}
@@ -997,6 +1008,9 @@
       m.returnTime = selectedStatusInModal === 'outing' ? document.getElementById('inputReturnTime').value : '';
       m.bubble = document.getElementById('inputBubble').value.trim();
 
+      // Guard against accidental double-tap on the newly rendered "Volver a oficina" button underneath modal
+      localEditGuard[m.id] = Date.now();
+
       const st = STATUSES[m.status];
       const detail = `${st.emoji} ${st.es}${m.reason ? ' (' + m.reason + ')' : ''}${m.bubble ? ' · "' + m.bubble + '"' : ''}`;
       pushLog(m, 'STATUS_CHANGE', detail);
@@ -1007,6 +1021,10 @@
     }
 
     function quickBackToOfficeDirect(memberId) {
+      // Prevent accidental click within 1.8s right after closing modal
+      if (localEditGuard[memberId] && (Date.now() - localEditGuard[memberId] < 1800)) {
+        return;
+      }
       const m = members.find(x => x.id === memberId);
       if (!m) return;
       commitElapsedTime(m);
@@ -1015,6 +1033,7 @@
       m.since = qNow.short;
       m.reason = '';
       m.returnTime = '';
+      localEditGuard[m.id] = Date.now();
       pushLog(m, 'RETURN_OFFICE', '🏢 사무실 복귀 · Regreso a oficina');
       renderAll();
       showToast(`🏢 ${m.name} ${t('사무실 복귀 완료!', 'regresó a la oficina')}`);
@@ -1035,6 +1054,7 @@
         m.since = qNow.short;
         m.reason = '';
         m.returnTime = '';
+        localEditGuard[m.id] = Date.now();
       });
       pushLog({ id: 'ALL', name: 'Equipo' }, 'BULK_UPDATE', `${STATUSES[newStatus].emoji} ${STATUSES[newStatus].es}`);
       saveLocal();
@@ -1051,6 +1071,7 @@
       members.forEach(m => {
         m.totals = emptyTotals();
         m.updatedAt = Date.now();
+        localEditGuard[m.id] = Date.now();
       });
       saveLocal();
       syncAllToSheets();
@@ -1166,6 +1187,7 @@
           totals: emptyTotals()
         };
         if (pin) unlockedMembers.add(newId);
+        localEditGuard[newId] = Date.now();
         members.push(newMember);
         pushLog(newMember, 'ADD_MEMBER', '➕ 새 팀원 등록 · Nuevo integrante');
         closeModal('avatarModal');
@@ -1182,6 +1204,7 @@
           m.theme = studioDraft.theme;
           m.pin = pin;
           if (pin) unlockedMembers.add(m.id);
+          localEditGuard[m.id] = Date.now();
           pushLog(m, 'UPDATE_AVATAR', `🎨 프로필 꾸미기 · ${studioDraft.avatar}`);
           closeModal('avatarModal');
           renderAll();
@@ -1211,13 +1234,13 @@
     }
 
     function saveLocal() {
-      localStorage.setItem('quito_members_v5', JSON.stringify(members));
-      localStorage.setItem('quito_logs_v5', JSON.stringify(activityLogs));
+      localStorage.setItem('quito_members_v6', JSON.stringify(members));
+      localStorage.setItem('quito_logs_v6', JSON.stringify(activityLogs));
     }
 
     function clearLocalCache() {
-      localStorage.removeItem('quito_members_v5');
-      localStorage.removeItem('quito_logs_v5');
+      localStorage.removeItem('quito_members_v6');
+      localStorage.removeItem('quito_logs_v6');
       members = [];
       activityLogs = [];
       unlockedMembers.clear();
@@ -1267,7 +1290,7 @@
           })
         });
         setSyncBadge('ok');
-        setTimeout(() => manualSync(true), 1800);
+        setTimeout(() => manualSync(true), 2200);
       } catch (e) {
         setSyncBadge('err');
       }
@@ -1305,7 +1328,7 @@
         returnTime: formatCleanTime(m.returnTime) || '',
         bubble: m.bubble || '',
         since: formatCleanTime(m.since) || '08:30',
-        updatedAt: m.updatedAt || Date.now(),
+        updatedAt: parseTimestampMs(m.updatedAt) || Date.now(),
         pin: m.pin || '',
         totals_json: JSON.stringify(todayTotals)
       };
@@ -1324,7 +1347,14 @@
           const oldMap = Object.fromEntries(members.map(m => [m.id, m]));
           members = json.members.map(row => {
             const prev = oldMap[row.id] || {};
-            const parsedTs = Number(row.updatedAt);
+            const guardTs = localEditGuard[row.id] || 0;
+            // Keep fresh local edit if saved within last 5 seconds
+            if (guardTs && (Date.now() - guardTs < 5000) && prev.id) {
+              return prev;
+            }
+            // Sheet is the single source of truth for updatedAt & totals_json!
+            const sheetTs = parseTimestampMs(row.updatedAt);
+            const fallbackTs = parseTimestampMs(prev.updatedAt) || Date.now();
             const mergedTotals = parseTotalsFromSheet(row.totals_json, prev.totals);
             return {
               ...prev,
@@ -1332,7 +1362,7 @@
               status: STATUSES[row.status] ? row.status : 'working',
               since: formatCleanTime(row.since) || '08:30',
               returnTime: formatCleanTime(row.returnTime) || '',
-              updatedAt: (!isNaN(parsedTs) && parsedTs > 0) ? parsedTs : (prev.updatedAt || Date.now()),
+              updatedAt: sheetTs > 0 ? sheetTs : fallbackTs,
               totals: mergedTotals
             };
           });
