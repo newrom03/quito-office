@@ -89,7 +89,6 @@
 
       <!-- Controls -->
       <div class="flex flex-wrap items-center gap-2">
-        <!-- View Mode Toggle: Tablet User vs Admin -->
         <div class="inline-flex rounded-full bg-amber-50 p-1 border border-amber-300 text-xs font-bold">
           <button type="button" onclick="setViewMode('user')" id="mode-user" class="px-2.5 py-1 rounded-full transition">📱 일반 (태블릿)</button>
           <button type="button" onclick="setViewMode('admin')" id="mode-admin" class="px-2.5 py-1 rounded-full transition">🛡️ 관리자</button>
@@ -101,7 +100,6 @@
           <button type="button" onclick="setLang('es')" id="lang-es" class="px-2.5 py-1 rounded-full transition">🇪🇨 ES</button>
         </div>
 
-        <!-- Admin-only Controls -->
         <div id="adminControlsGroup" class="hidden flex-wrap items-center gap-2">
           <button type="button" onclick="openModal('sheetsModal')" class="px-3 py-1.5 rounded-full bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold flex items-center gap-1.5 transition">
             ⚙️ Google Sheets
@@ -124,15 +122,11 @@
       </div>
     </div>
 
-    <!-- Filter Bar -->
     <div class="max-w-[1680px] mx-auto px-4 pb-2.5 flex items-center gap-2 overflow-x-auto no-scrollbar" id="filterBar"></div>
   </header>
 
-  <!-- Main Layout -->
   <main class="max-w-[1680px] mx-auto px-3 sm:px-4 pt-4">
     <div id="mainLayout" class="flex flex-col lg:flex-row items-start gap-4">
-      
-      <!-- Team Board -->
       <div class="w-full lg:flex-1 space-y-3.5 min-w-0">
         <div class="bg-white/90 border border-amber-200/80 rounded-2xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 shadow-sm">
           <div class="text-xs sm:text-sm font-semibold text-slate-700">
@@ -146,7 +140,6 @@
         <section id="teamGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3"></section>
       </div>
 
-      <!-- Admin-only Sticky Live Activity Feed -->
       <aside id="activityFeedAside" class="hidden w-full lg:w-[330px] xl:w-[360px] shrink-0 lg:sticky lg:top-[116px]">
         <section class="bg-white/95 border-2 border-amber-200/80 rounded-3xl p-4 sm:p-5 shadow-sm">
           <div class="flex items-center justify-between mb-3 pb-2.5 border-b border-slate-100">
@@ -162,14 +155,11 @@
           <div id="activityFeed" class="space-y-2 max-h-[calc(100vh-220px)] overflow-y-auto pr-1 text-xs"></div>
         </section>
       </aside>
-
     </div>
   </main>
 
-  <!-- Toast -->
   <div id="toast" class="fixed top-20 left-1/2 -translate-x-1/2 z-[60] pointer-events-none hidden bg-slate-900 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-lg"></div>
 
-  <!-- Poke Modal -->
   <div id="pokeModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border-2 border-amber-300 text-center">
       <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-amber-100 text-3xl flex items-center justify-center">👉🦙</div>
@@ -185,7 +175,6 @@
     </div>
   </div>
 
-  <!-- PIN Gatekeeper Modal -->
   <div id="pinGateModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
     <div id="pinGateCard" class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border-2 border-rose-200 text-center">
       <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-rose-100 text-2xl flex items-center justify-center">🔒</div>
@@ -202,7 +191,6 @@
     </div>
   </div>
 
-  <!-- Status Change Modal -->
   <div id="statusModal" class="fixed inset-0 z-40 hidden bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-amber-100 max-h-[92vh] overflow-y-auto relative z-50">
       <div class="flex items-start justify-between gap-3 mb-4">
@@ -222,14 +210,12 @@
         <div id="statusButtonsGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
       </div>
 
-      <!-- Working Location Field -->
       <div id="workingLocationFields" class="hidden mb-4 p-3.5 rounded-2xl bg-emerald-50/80 border border-emerald-200 space-y-2.5">
         <label class="block text-xs font-bold text-emerald-900">📍 작업 장소 선택 · Lugar de trabajo</label>
         <div class="flex flex-wrap gap-1.5" id="workLocationChips"></div>
         <input type="text" id="inputWorkLocation" placeholder="장소 직접 입력 (기본: 사무실 · Oficina)" class="w-full px-3 py-2 rounded-xl border border-emerald-200 bg-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-400">
       </div>
 
-      <!-- Outing Fields -->
       <div id="outingFields" class="hidden mb-4 p-3.5 rounded-2xl bg-sky-50/80 border border-sky-200 space-y-2.5">
         <label class="block text-xs font-bold text-sky-900">외출 사유 · Motivo de salida</label>
         <div class="flex flex-wrap gap-1.5" id="reasonChips"></div>
@@ -257,7 +243,6 @@
     </div>
   </div>
 
-  <!-- Avatar & Profile Studio Modal -->
   <div id="avatarModal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl border border-violet-100 max-h-[92vh] overflow-y-auto relative z-50">
       <div class="flex items-center justify-between mb-4">
@@ -302,7 +287,6 @@
     </div>
   </div>
 
-  <!-- Google Sheets Modal -->
   <div id="sheetsModal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-sky-100">
       <div class="flex items-center justify-between mb-3">
@@ -540,12 +524,12 @@
         return { ...emptyTotals(), streak: prevStreak + 1 };
       }
       return {
-        working: Number(candidate.working) || 0,
-        break: Number(candidate.break) || 0,
-        meal: Number(candidate.meal) || 0,
-        cooking: Number(candidate.cooking) || 0,
-        outing: Number(candidate.outing) || 0,
-        meeting: Number(candidate.meeting) || 0,
+        working: Math.min(43200, Number(candidate.working) || 0),
+        break: Math.min(43200, Number(candidate.break) || 0),
+        meal: Math.min(43200, Number(candidate.meal) || 0),
+        cooking: Math.min(43200, Number(candidate.cooking) || 0),
+        outing: Math.min(43200, Number(candidate.outing) || 0),
+        meeting: Math.min(43200, Number(candidate.meeting) || 0),
         dayKey: todayKey,
         streak: prevStreak
       };
@@ -565,6 +549,8 @@
       if (ts <= 0) return { isOverdue: false, label: '' };
 
       const elapsedMin = Math.floor((Date.now() - ts) / 60000);
+      if (elapsedMin > 1440) return { isOverdue: false, label: '' };
+
       const qShort = getQuitoNow().short;
       const nowParts = qShort.split(':');
       const nowMinOfDay = Number(nowParts[0]) * 60 + Number(nowParts[1]);
@@ -614,7 +600,7 @@
       const ts = parseTimestampMs(m.updatedAt);
       if (m.status && m.status !== 'off' && ts > 0) {
         const elapsedSec = Math.max(0, (Date.now() - ts) / 1000);
-        if (base[m.status] !== undefined && elapsedSec < 86400) {
+        if (base[m.status] !== undefined && elapsedSec < 43200) {
           base[m.status] += elapsedSec;
         }
       }
@@ -631,8 +617,8 @@
       const ts = parseTimestampMs(m.updatedAt);
       if (m.status && m.status !== 'off' && ts > 0) {
         const elapsedSec = Math.max(0, (Date.now() - ts) / 1000);
-        if (m.totals[m.status] !== undefined && elapsedSec < 86400) {
-          m.totals[m.status] = Math.round((Number(m.totals[m.status]) || 0) + elapsedSec);
+        if (m.totals[m.status] !== undefined && elapsedSec < 43200) {
+          m.totals[m.status] = Math.min(43200, Math.round((Number(m.totals[m.status]) || 0) + elapsedSec));
         }
       }
       m.updatedAt = Date.now();
@@ -714,7 +700,7 @@
       const qNow = getQuitoNow();
 
       m.poke_info = JSON.stringify({ from: fromName, time: qNow.short, ts: Date.now() });
-      localEditGuard[m.id] = Date.now();
+      localEditGuard[m.id] = Date.now() + 6000;
       pushLog(m, 'POKE', `👉 ${fromName}님이 위치 확인 호출!`);
       saveLocal();
       closeModal('pokeModal');
@@ -730,7 +716,7 @@
             body: JSON.stringify({ action: 'pokeMember', id: m.id, fromName })
           });
           setSyncBadge('ok');
-          setTimeout(() => manualSync(true), 800);
+          setTimeout(() => manualSync(true), 2500);
         } catch (e) {
           setSyncBadge('err');
         }
@@ -741,7 +727,7 @@
       const m = members.find(x => x.id === memberId);
       if (!m) return;
       m.poke_info = '';
-      localEditGuard[m.id] = Date.now();
+      localEditGuard[m.id] = Date.now() + 6000;
       saveLocal();
       renderAll();
       showToast('🔕 호출 알림을 닫았습니다.');
@@ -752,8 +738,8 @@
             method: 'POST',
             mode: 'no-cors',
             body: JSON.stringify({
-              action: 'syncAll',
-              members: members.map(serializeMemberForSheet)
+              action: 'updateMember',
+              member: serializeMemberForSheet(m)
             })
           });
         } catch (e) {}
@@ -1273,7 +1259,7 @@
       }
 
       m.bubble = document.getElementById('inputBubble').value.trim();
-      localEditGuard[m.id] = Date.now();
+      localEditGuard[m.id] = Date.now() + 6000;
 
       const st = STATUSES[m.status];
       const detail = `${st.emoji} ${st.es}${m.reason ? ' (' + m.reason + ')' : ''}${m.bubble ? ' · "' + m.bubble + '"' : ''}`;
@@ -1285,9 +1271,6 @@
     }
 
     function quickOutingDirect(memberId) {
-      if (localEditGuard[memberId] && (Date.now() - localEditGuard[memberId] < 1800)) {
-        return;
-      }
       const m = members.find(x => x.id === memberId);
       if (!m) return;
       commitElapsedTime(m);
@@ -1296,7 +1279,7 @@
       m.since = qNow.short;
       m.reason = t('잠깐 외출', 'Salida rápida');
       m.returnTime = '';
-      localEditGuard[m.id] = Date.now();
+      localEditGuard[m.id] = Date.now() + 6000;
       pushLog(m, 'QUICK_OUTING', '🚗 잠깐 외출 · Salida rápida');
       renderAll();
       showToast(`🚗 ${m.name} ${t('잠깐 외출 시작!', 'salió un momento')}`);
@@ -1304,9 +1287,6 @@
     }
 
     function quickBackToOfficeDirect(memberId) {
-      if (localEditGuard[memberId] && (Date.now() - localEditGuard[memberId] < 1800)) {
-        return;
-      }
       const m = members.find(x => x.id === memberId);
       if (!m) return;
       commitElapsedTime(m);
@@ -1315,7 +1295,7 @@
       m.since = qNow.short;
       m.reason = '사무실 · Oficina';
       m.returnTime = '';
-      localEditGuard[m.id] = Date.now();
+      localEditGuard[m.id] = Date.now() + 6000;
       pushLog(m, 'RETURN_OFFICE', '🏢 사무실 복귀 · Regreso a oficina');
       renderAll();
       showToast(`🏢 ${m.name} ${t('사무실 복귀 완료!', 'regresó a la oficina')}`);
@@ -1336,7 +1316,7 @@
         m.since = qNow.short;
         m.reason = newStatus === 'working' ? '사무실 · Oficina' : '';
         m.returnTime = '';
-        localEditGuard[m.id] = Date.now();
+        localEditGuard[m.id] = Date.now() + 6000;
       });
       pushLog({ id: 'ALL', name: 'Equipo' }, 'BULK_UPDATE', `${STATUSES[newStatus].emoji} ${STATUSES[newStatus].es}`);
       saveLocal();
@@ -1354,7 +1334,7 @@
         const prevStreak = m.totals ? (Number(m.totals.streak) || 1) : 1;
         m.totals = { ...emptyTotals(), streak: prevStreak };
         m.updatedAt = Date.now();
-        localEditGuard[m.id] = Date.now();
+        localEditGuard[m.id] = Date.now() + 6000;
       });
       saveLocal();
       syncAllToSheets();
@@ -1373,7 +1353,7 @@
           body: JSON.stringify({ action: 'forceDailyReset' })
         });
         showToast('🌅 전원 일일 초기화를 요청했습니다...');
-        setTimeout(() => manualSync(true), 1200);
+        setTimeout(() => manualSync(true), 2000);
       } catch (e) {
         setSyncBadge('err');
       }
@@ -1471,7 +1451,7 @@
           totals: emptyTotals()
         };
         if (pin) unlockedMembers.add(newId);
-        localEditGuard[newId] = Date.now();
+        localEditGuard[newId] = Date.now() + 6000;
         members.push(newMember);
         pushLog(newMember, 'ADD_MEMBER', '➕ 새 팀원 등록 · Nuevo integrante');
         closeModal('avatarModal');
@@ -1488,7 +1468,7 @@
           m.theme = studioDraft.theme;
           m.pin = pin;
           if (pin) unlockedMembers.add(m.id);
-          localEditGuard[m.id] = Date.now();
+          localEditGuard[m.id] = Date.now() + 6000;
           pushLog(m, 'UPDATE_AVATAR', `🎨 프로필 꾸미기 · ${studioDraft.avatar}`);
           closeModal('avatarModal');
           renderAll();
@@ -1574,7 +1554,7 @@
           })
         });
         setSyncBadge('ok');
-        setTimeout(() => manualSync(true), 1000);
+        setTimeout(() => manualSync(true), 2500);
       } catch (e) {
         setSyncBadge('err');
       }
@@ -1632,12 +1612,13 @@
           const oldMap = Object.fromEntries(members.map(m => [m.id, m]));
           members = json.members.map(row => {
             const prev = oldMap[row.id] || {};
-            const guardTs = localEditGuard[row.id] || 0;
-            if (guardTs && (Date.now() - guardTs < 2500) && prev.id) {
+            const guardUntil = localEditGuard[row.id] || 0;
+            if (guardUntil > Date.now() && prev.id) {
               return prev;
             }
             const sheetTs = parseTimestampMs(row.updatedAt);
-            const fallbackTs = parseTimestampMs(prev.updatedAt) || Date.now();
+            const prevTs = parseTimestampMs(prev.updatedAt);
+            const fallbackTs = prevTs > 0 ? prevTs : Date.now();
             const mergedTotals = parseTotalsFromSheet(row.totals_json, prev.totals);
             return {
               ...prev,
@@ -1777,7 +1758,7 @@
     setInterval(updateClock, 1000);
     setInterval(() => { if (!isAnyModalOpen()) renderGrid(); }, 15000);
     manualSync(true);
-    setInterval(() => manualSync(false), 6000);
+    setInterval(() => manualSync(false), 10000);
   </script>
 </body>
 </html>
