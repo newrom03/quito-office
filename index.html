@@ -165,11 +165,13 @@
     <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border-2 border-amber-300 text-center">
       <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-amber-100 text-3xl flex items-center justify-center">👉🦙</div>
       <h3 class="text-lg font-bold text-slate-800" id="pokeModalTitle">동료 콕 찌르기</h3>
-      <p class="text-xs text-slate-500 mt-1 mb-4">카드에 위치 확인 알림 배너를 띄우고 텔레그램 단체방으로 호출합니다.</p>
-      <input type="text" id="pokeSenderInput" placeholder="보내는 사람 이름 (예: Miguel)" class="w-full px-3.5 py-2.5 rounded-2xl border-2 border-amber-200 focus:border-amber-500 focus:outline-none text-xs font-bold text-center mb-4">
+      <p class="text-xs text-slate-500 mt-1 mb-4">카드에 위치 확인 알림 배너를 띄우고 텔레그램 단체방으로 즉시 호출합니다.</p>
+      <input type="text" id="pokeSenderInput" placeholder="보내는 사람 이름 (예: Miguel)"
+        onkeydown="if(event.key==='Enter') submitPoke()"
+        class="w-full px-3.5 py-2.5 rounded-2xl border-2 border-amber-200 focus:border-amber-500 focus:outline-none text-xs font-bold text-center mb-4">
       <div class="flex items-center justify-center gap-2">
         <button type="button" onclick="closeModal('pokeModal')" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">취소</button>
-        <button type="button" onclick="submitPoke()" class="px-5 py-2 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-900 text-xs font-bold shadow-sm">📣 호출 보내기!</button>
+        <button type="button" onclick="submitPoke()" class="px-5 py-2 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-900 text-xs font-bold shadow-sm">📣 즉시 호출 보내기!</button>
       </div>
     </div>
   </div>
@@ -495,7 +497,6 @@
       return !isNaN(d.getTime()) ? d.getTime() : 0;
     }
 
-    // Gamification: Detect if member forgot to update status or passed return time
     function getOverdueState(m) {
       if (!m || m.status === 'off') return { isOverdue: false, label: '' };
       const ts = parseTimestampMs(m.updatedAt);
@@ -573,7 +574,7 @@
         }
       }
       m.updatedAt = Date.now();
-      m.poke_info = ''; // Clear poke alert once owner updates status
+      m.poke_info = '';
     }
 
     function isAnyModalOpen() {
@@ -648,21 +649,29 @@
       localStorage.setItem('quito_my_name', fromName);
       const qNow = getQuitoNow();
 
+      // 1) Instant UI & feed update
       m.poke_info = JSON.stringify({ from: fromName, time: qNow.short, ts: Date.now() });
       localEditGuard[m.id] = Date.now();
       pushLog(m, 'POKE', `👉 ${fromName}님이 위치 확인 호출!`);
+      saveLocal();
       closeModal('pokeModal');
       renderAll();
       showToast(`📣 ${m.name}님에게 콕 찌르기 알림을 보냈습니다!`);
 
+      // 2) Immediately send to GAS + Telegram and re-sync 0.8s later
       if (gasUrl) {
+        setSyncBadge('syncing');
         try {
           await fetch(gasUrl, {
             method: 'POST',
             mode: 'no-cors',
             body: JSON.stringify({ action: 'pokeMember', id: m.id, fromName })
           });
-        } catch (e) {}
+          setSyncBadge('ok');
+          setTimeout(() => manualSync(true), 800);
+        } catch (e) {
+          setSyncBadge('err');
+        }
       }
     }
 
@@ -1222,7 +1231,7 @@
           body: JSON.stringify({ action: 'forceDailyReset' })
         });
         showToast('🌅 전원 일일 초기화를 요청했습니다...');
-        setTimeout(() => manualSync(true), 1800);
+        setTimeout(() => manualSync(true), 1200);
       } catch (e) {
         setSyncBadge('err');
       }
@@ -1423,7 +1432,7 @@
           })
         });
         setSyncBadge('ok');
-        setTimeout(() => manualSync(true), 2200);
+        setTimeout(() => manualSync(true), 1000);
       } catch (e) {
         setSyncBadge('err');
       }
@@ -1482,7 +1491,7 @@
           members = json.members.map(row => {
             const prev = oldMap[row.id] || {};
             const guardTs = localEditGuard[row.id] || 0;
-            if (guardTs && (Date.now() - guardTs < 5000) && prev.id) {
+            if (guardTs && (Date.now() - guardTs < 2500) && prev.id) {
               return prev;
             }
             const sheetTs = parseTimestampMs(row.updatedAt);
@@ -1623,7 +1632,7 @@
     setInterval(updateClock, 1000);
     setInterval(() => { if (!isAnyModalOpen()) renderGrid(); }, 15000);
     manualSync(true);
-    setInterval(() => manualSync(false), 12000);
+    setInterval(() => manualSync(false), 6000);
   </script>
 </body>
 </html>
