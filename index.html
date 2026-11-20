@@ -438,6 +438,7 @@
       if (act === 'ADD_MEMBER') return '➕ 새 팀원 등록 · Nuevo integrante';
       if (act === 'UPDATE_AVATAR') return `🎨 프로필 꾸미기 · ${row.avatar_config || ''}`;
       if (act === 'RETURN_OFFICE') return '🏢 사무실 복귀 · Regreso a oficina';
+      if (act === 'QUICK_BREAK') return '🚶 잠깐 외출 · Salida rápida (휴식 합산)';
       if (stObj) {
         return `${stObj.emoji} ${stObj.es}${row.reason ? ' (' + row.reason + ')' : ''}${row.bubble ? ' · "' + row.bubble + '"' : ''}`;
       }
@@ -517,8 +518,9 @@
           }
         }
       }
-      if (m.status === 'break' && elapsedMin >= 40) {
-        return { isOverdue: true, label: t(`휴식 ${elapsedMin}분 경과`, `Descanso ${elapsedMin}m`) };
+      // 잠깐 외출 / 휴식(break)은 30분 경과 시 알람
+      if (m.status === 'break' && elapsedMin >= 30) {
+        return { isOverdue: true, label: t(`잠깐외출·휴식 ${elapsedMin}분 경과!`, `Salida rápida/Descanso ${elapsedMin}m`) };
       }
       if (m.status === 'meal' && elapsedMin >= 90) {
         return { isOverdue: true, label: t(`식사 ${elapsedMin}분 경과`, `Almuerzo ${elapsedMin}m`) };
@@ -629,7 +631,29 @@
         openAvatarStudioDirect(memberId);
       } else if (actionType === 'quickReturn') {
         quickBackToOfficeDirect(memberId);
+      } else if (actionType === 'quickBreak') {
+        quickBreakDirect(memberId);
       }
+    }
+
+    // 원클릭 잠깐 외출 (시간은 휴식 break에 누적, 30분 경과 시 알람)
+    function quickBreakDirect(memberId) {
+      if (localEditGuard[memberId] && (Date.now() - localEditGuard[memberId] < 1500)) {
+        return;
+      }
+      const m = members.find(x => x.id === memberId);
+      if (!m) return;
+      commitElapsedTime(m);
+      const qNow = getQuitoNow();
+      m.status = 'break';
+      m.since = qNow.short;
+      m.reason = '잠깐 외출 · Salida rápida';
+      m.returnTime = '';
+      localEditGuard[m.id] = Date.now();
+      pushLog(m, 'QUICK_BREAK', '🚶 잠깐 외출 · Salida rápida (휴식 시간 누적 · 30분 알람)');
+      renderAll();
+      showToast(`🚶 ${m.name} ${t('잠깐 외출 시작! (휴식 합산 · 30분 알람)', 'Salida rápida (cuenta como descanso · 30m)')}`);
+      persistAndSync(m, 'QUICK_BREAK');
     }
 
     function openPokeModal(memberId) {
@@ -673,7 +697,6 @@
       }
     }
 
-    // Dismiss poke banner manually by clicking the X button on the banner
     async function clearPokeBanner(memberId) {
       const m = members.find(x => x.id === memberId);
       if (!m) return;
@@ -997,8 +1020,8 @@
                   <span>🕒 ${cleanSince} ~</span>
                   ${m.status === 'outing' && cleanReturn ? `<span class="px-1.5 py-0.5 rounded-md bg-sky-100 text-sky-800 font-bold">복귀 ${cleanReturn}</span>` : ''}
                 </div>
-                ${m.status === 'outing' && m.reason ? `
-                  <div class="mt-1 text-xs font-bold text-sky-800 bg-sky-100/80 px-2 py-0.5 rounded-lg truncate">
+                ${(m.status === 'outing' || m.status === 'break') && m.reason ? `
+                  <div class="mt-1 text-xs font-bold ${m.status === 'break' ? 'text-amber-800 bg-amber-100/90' : 'text-sky-800 bg-sky-100/80'} px-2 py-0.5 rounded-lg truncate">
                     📍 ${escapeHtml(m.reason)}
                   </div>
                 ` : ''}
@@ -1030,14 +1053,17 @@
 
             <div class="mt-2.5 flex items-center gap-1.5">
               ${m.status !== 'working' ? `
-                <button type="button" onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'quickReturn')" class="flex-1 py-1.5 px-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-2xs transition">
+                <button type="button" onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'quickReturn')" class="flex-1 py-1.5 px-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-2xs transition truncate">
                   🏢 ${t('사무실 복귀!', 'Volver')}
                 </button>
               ` : `
-                <button type="button" onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'status')" class="flex-1 py-1.5 px-2.5 rounded-xl bg-white hover:bg-amber-100/70 text-slate-700 border border-slate-200 text-xs font-bold transition">
-                  ${hasPin && !isUnlocked ? '🔒' : '✨'} ${t('상태 변경', 'Cambiar')}
+                <button type="button" onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'quickBreak')" title="클릭 즉시 잠깐 외출 시작 (휴식 시간 합산 · 30분 후 알람)" class="flex-1 py-1.5 px-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold transition truncate">
+                  🚶 ${t('잠깐 외출', 'Salida rápida')}
                 </button>
               `}
+              <button type="button" onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'status')" title="상세 상태 변경" class="py-1.5 px-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold transition shrink-0">
+                ${hasPin && !isUnlocked ? '🔒' : '✨'} ${t('상태', 'Estado')}
+              </button>
               <button type="button" onclick="event.stopPropagation(); openPokeModal('${m.id}')" title="위치 확인 호출 보내기" class="py-1.5 px-2.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 text-xs font-bold transition shrink-0">
                 👉 콕 찌르기
               </button>
