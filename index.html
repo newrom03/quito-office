@@ -649,7 +649,6 @@
       localStorage.setItem('quito_my_name', fromName);
       const qNow = getQuitoNow();
 
-      // 1) Instant UI & feed update
       m.poke_info = JSON.stringify({ from: fromName, time: qNow.short, ts: Date.now() });
       localEditGuard[m.id] = Date.now();
       pushLog(m, 'POKE', `👉 ${fromName}님이 위치 확인 호출!`);
@@ -658,7 +657,6 @@
       renderAll();
       showToast(`📣 ${m.name}님에게 콕 찌르기 알림을 보냈습니다!`);
 
-      // 2) Immediately send to GAS + Telegram and re-sync 0.8s later
       if (gasUrl) {
         setSyncBadge('syncing');
         try {
@@ -672,6 +670,30 @@
         } catch (e) {
           setSyncBadge('err');
         }
+      }
+    }
+
+    // Dismiss poke banner manually by clicking the X button on the banner
+    async function clearPokeBanner(memberId) {
+      const m = members.find(x => x.id === memberId);
+      if (!m) return;
+      m.poke_info = '';
+      localEditGuard[m.id] = Date.now();
+      saveLocal();
+      renderAll();
+      showToast('🔕 호출 알림을 닫았습니다.');
+
+      if (gasUrl) {
+        try {
+          await fetch(gasUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify({
+              action: 'syncAll',
+              members: members.map(serializeMemberForSheet)
+            })
+          });
+        } catch (e) {}
       }
     }
 
@@ -934,9 +956,9 @@
         return `
           <div class="relative rounded-3xl border-2 ${cardBorderClass} p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
             ${poke ? `
-              <div class="mb-2.5 px-3 py-1.5 rounded-xl bg-amber-300/90 text-slate-900 text-[11px] font-bold flex items-center justify-between gap-1 animate-bounce">
-                <span>📣 ${escapeHtml(poke.from)}님이 호출함! (${poke.time})</span>
-                <span>👀</span>
+              <div class="mb-2.5 px-3 py-1.5 rounded-xl bg-amber-300/95 text-slate-900 text-[11px] font-bold flex items-center justify-between gap-2 shadow-2xs">
+                <span class="truncate">📣 ${escapeHtml(poke.from)}님이 호출함! (${poke.time})</span>
+                <button type="button" onclick="event.stopPropagation(); clearPokeBanner('${m.id}')" title="호출 배너 지우기" class="w-5 h-5 rounded-full bg-amber-900/15 hover:bg-amber-900/30 text-slate-900 flex items-center justify-center text-xs font-extrabold shrink-0 transition">✕</button>
               </div>
             ` : ''}
 
