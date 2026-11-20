@@ -37,10 +37,16 @@
       0% { opacity: 1; transform: translate(-50%, 0) scale(0.5); }
       100% { opacity: 0; transform: translate(-50%, -34px) scale(1.3); }
     }
+    @keyframes shakeX {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
     .anim-float { animation: floatSlow 3s ease-in-out infinite; }
     .anim-squish { animation: squishPop 0.45s ease-out; }
     .anim-steam { animation: steamRise 1.8s ease-in-out infinite; }
     .anim-zzz { animation: zzzFloat 2.2s ease-in-out infinite; }
+    .anim-shake { animation: shakeX 0.3s ease-in-out; }
     .heart-pop {
       position: absolute;
       left: 50%;
@@ -108,13 +114,12 @@
     <div class="max-w-[1440px] mx-auto px-4 pb-2.5 flex items-center gap-2 overflow-x-auto no-scrollbar" id="filterBar"></div>
   </header>
 
-  <!-- Main 2-Column Layout: Left Team Cards + Right Live Activity Feed -->
+  <!-- Main 2-Column Layout -->
   <main class="max-w-[1440px] mx-auto px-4 pt-5">
     <div class="flex flex-col lg:flex-row items-start gap-5">
       
       <!-- Left Column: Team Board -->
       <div class="w-full lg:flex-1 space-y-4 min-w-0">
-        <!-- Banner -->
         <div class="bg-white/90 border border-amber-200/80 rounded-2xl px-4 py-3 flex flex-wrap items-center justify-between gap-2 shadow-sm">
           <div class="text-xs sm:text-sm font-semibold text-slate-700">
             📊 본인 카드를 클릭해 상태를 바꾸고, 아바타를 톡톡 쓰다듬어 보세요 💕 · Haz clic en tu tarjeta
@@ -124,7 +129,6 @@
           </div>
         </div>
 
-        <!-- Team Cards Grid -->
         <section id="teamGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></section>
       </div>
 
@@ -147,6 +151,23 @@
 
   <!-- Toast -->
   <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 hidden bg-slate-900 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-lg"></div>
+
+  <!-- PIN Gatekeeper Modal (Blocks access BEFORE opening edit modals) -->
+  <div id="pinGateModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div id="pinGateCard" class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border-2 border-rose-200 text-center">
+      <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-rose-100 text-2xl flex items-center justify-center">🔒</div>
+      <h3 class="text-lg font-bold text-slate-800" id="pinGateTitle">본인 확인 PIN 입력</h3>
+      <p class="text-xs text-slate-500 mt-1 mb-4" id="pinGateSub">잠금 설정된 카드입니다. 4자리 PIN을 입력해 주세요.</p>
+      <input type="password" id="pinGateInput" maxlength="4" inputmode="numeric" placeholder="••••"
+        onkeydown="if(event.key==='Enter') confirmPinGate()"
+        class="w-40 mx-auto block px-4 py-2.5 rounded-2xl border-2 border-rose-200 focus:border-rose-500 focus:outline-none text-xl font-bold tracking-[0.4em] text-center mb-2">
+      <p id="pinGateError" class="text-xs font-bold text-rose-600 h-4 mb-3"></p>
+      <div class="flex items-center justify-center gap-2">
+        <button onclick="closeModal('pinGateModal')" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">취소</button>
+        <button onclick="confirmPinGate()" class="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-sm">🔓 잠금 해제</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Status Change Modal -->
   <div id="statusModal" class="fixed inset-0 z-40 hidden bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
@@ -186,12 +207,6 @@
         <input type="text" id="inputBubble" maxlength="40" placeholder="예: 오늘도 파이팅! 💪 / ¡Con toda!" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-amber-400">
       </div>
 
-      <!-- PIN Verification if locked -->
-      <div id="pinVerifyBox" class="hidden mb-4 p-3 rounded-2xl bg-rose-50 border border-rose-200">
-        <label class="block text-xs font-bold text-rose-800 mb-1">🔒 개인 PIN 4자리 입력 · Ingresa tu PIN</label>
-        <input type="password" id="inputVerifyPin" maxlength="4" inputmode="numeric" placeholder="••••" class="w-32 px-3 py-1.5 rounded-xl border border-rose-300 bg-white text-sm font-bold tracking-widest text-center">
-      </div>
-
       <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
         <button onclick="openAvatarStudioFromStatus()" class="px-3.5 py-2 rounded-xl bg-violet-50 hover:bg-violet-100 text-violet-700 border border-violet-200 text-xs font-bold transition">
           🎨 캐릭터·프로필 꾸미기
@@ -212,32 +227,28 @@
         <button onclick="closeModal('avatarModal')" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold">✕</button>
       </div>
 
-      <!-- Live Preview -->
       <div class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200/80 mb-4">
         <div id="studioPreviewBox" class="w-24 h-24 rounded-3xl flex items-center justify-center shadow-sm border-2 border-white shrink-0"></div>
         <div class="flex-1 space-y-2">
           <input type="text" id="studioName" placeholder="이름 / Nombre" class="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-sm font-bold">
           <input type="text" id="studioRole" placeholder="역할 / Rol (예: Coordinador)" class="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-medium">
           <div class="flex items-center gap-2">
-            <span class="text-xs font-bold text-slate-600">🔒 잠금 PIN (선택 4자리):</span>
+            <span class="text-xs font-bold text-slate-600">🔒 잠금 PIN (4자리 숫자):</span>
             <input type="text" id="studioPin" maxlength="4" inputmode="numeric" placeholder="미설정" class="w-24 px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-xs font-bold text-center">
           </div>
         </div>
       </div>
 
-      <!-- Character Picker -->
       <div class="mb-4">
         <label class="block text-xs font-bold text-slate-700 mb-2">1. 캐릭터 선택 (12종) · Elige tu personaje</label>
         <div id="avatarPickerGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-2"></div>
       </div>
 
-      <!-- Accessory Picker -->
       <div class="mb-4">
         <label class="block text-xs font-bold text-slate-700 mb-2">2. 머리 액세서리 (7종) · Accesorio</label>
         <div id="accessoryPickerGrid" class="flex flex-wrap gap-1.5"></div>
       </div>
 
-      <!-- Theme Picker -->
       <div class="mb-5">
         <label class="block text-xs font-bold text-slate-700 mb-2">3. 카드 배경 테마 (6종) · Color de tarjeta</label>
         <div id="themePickerGrid" class="flex flex-wrap gap-2"></div>
@@ -282,6 +293,10 @@
     let selectedStatusInModal = 'working';
     let studioMode = 'edit';
     let studioDraft = { avatar: 'alpaca', accessory: 'none', theme: 'amber' };
+
+    // Remember unlocked member IDs during this browser session so owner doesn't re-type repeatedly
+    const unlockedMembers = new Set();
+    let pendingGateAction = null; // { type: 'status' | 'studio' | 'quickReturn', memberId }
 
     const STATUSES = {
       working:  { ko: '열일 중', es: 'Trabajando', emoji: '💻', badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
@@ -365,7 +380,6 @@
       return { time: fmtTime, short: fmtShort, date: fmtDate, ms: now.getTime() };
     }
 
-    // Format Google Sheets time value cleanly (handles 1899-12-30T... ISO strings)
     function formatCleanTime(val) {
       if (!val) return '';
       const str = String(val).trim();
@@ -416,6 +430,55 @@
         }
       }
       m.updatedAt = Date.now();
+    }
+
+    // Gatekeeper Function: Checks PIN BEFORE opening any edit screen
+    function requireAuthAndRun(memberId, actionType) {
+      const m = members.find(x => x.id === memberId);
+      if (!m) return;
+      const pinStr = String(m.pin || '').trim();
+      if (!pinStr || unlockedMembers.has(memberId)) {
+        executeProtectedAction(memberId, actionType);
+        return;
+      }
+      pendingGateAction = { memberId, actionType };
+      document.getElementById('pinGateTitle').textContent = `🔒 ${m.name} · 본인 확인`;
+      document.getElementById('pinGateSub').textContent = '잠금 설정된 프로필입니다. 4자리 PIN을 입력해 주세요.';
+      document.getElementById('pinGateInput').value = '';
+      document.getElementById('pinGateError').textContent = '';
+      openModal('pinGateModal');
+      setTimeout(() => document.getElementById('pinGateInput').focus(), 80);
+    }
+
+    function confirmPinGate() {
+      if (!pendingGateAction) return;
+      const { memberId, actionType } = pendingGateAction;
+      const m = members.find(x => x.id === memberId);
+      if (!m) return;
+      const entered = document.getElementById('pinGateInput').value.trim();
+      if (entered === String(m.pin).trim()) {
+        unlockedMembers.add(memberId);
+        closeModal('pinGateModal');
+        executeProtectedAction(memberId, actionType);
+      } else {
+        document.getElementById('pinGateError').textContent = '❌ PIN 번호가 일치하지 않습니다!';
+        const card = document.getElementById('pinGateCard');
+        card.classList.remove('anim-shake');
+        void card.offsetWidth;
+        card.classList.add('anim-shake');
+        document.getElementById('pinGateInput').value = '';
+        document.getElementById('pinGateInput').focus();
+      }
+    }
+
+    function executeProtectedAction(memberId, actionType) {
+      if (actionType === 'status') {
+        openStatusModalDirect(memberId);
+      } else if (actionType === 'studio') {
+        openAvatarStudioDirect(memberId);
+      } else if (actionType === 'quickReturn') {
+        quickBackToOfficeDirect(memberId);
+      }
     }
 
     function renderAvatarSVG(avatarId, status = 'working', accessory = 'none') {
@@ -658,6 +721,8 @@
 
         const cleanSince = formatCleanTime(m.since) || '08:30';
         const cleanReturn = formatCleanTime(m.returnTime);
+        const hasPin = String(m.pin || '').trim().length > 0;
+        const isUnlocked = unlockedMembers.has(m.id);
 
         return `
           <div class="relative rounded-3xl border-2 ${th.card} p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
@@ -667,14 +732,14 @@
                 <span>${t(st.ko, st.es)}</span>
               </span>
               <div class="flex items-center gap-1">
-                ${m.pin ? '<span title="PIN Protegido" class="text-xs px-1.5 py-0.5 rounded-full bg-white/80 text-slate-500">🔒</span>' : ''}
-                <button onclick="event.stopPropagation(); openAvatarStudio('${m.id}')" title="캐릭터·프로필 꾸미기" class="w-8 h-8 rounded-full bg-white/90 hover:bg-violet-100 text-slate-700 border border-slate-200/80 flex items-center justify-center text-sm shadow-2xs transition">
+                ${hasPin ? `<span title="${isUnlocked ? '인증됨' : 'PIN 잠금'}" class="text-xs px-2 py-0.5 rounded-full bg-white/90 border border-slate-200/80 ${isUnlocked ? 'text-emerald-600' : 'text-rose-600'} font-bold">${isUnlocked ? '🔓' : '🔒'}</span>` : ''}
+                <button onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'studio')" title="캐릭터·프로필 꾸미기" class="w-8 h-8 rounded-full bg-white/90 hover:bg-violet-100 text-slate-700 border border-slate-200/80 flex items-center justify-center text-sm shadow-2xs transition">
                   🎨
                 </button>
               </div>
             </div>
 
-            <div onclick="openStatusModal('${m.id}')" class="cursor-pointer flex items-center gap-3.5 mb-3">
+            <div onclick="requireAuthAndRun('${m.id}', 'status')" class="cursor-pointer flex items-center gap-3.5 mb-3">
               <div onclick="event.stopPropagation(); petAvatar(this)" class="relative w-20 h-20 rounded-2xl ${th.avatarBg} border-2 border-white shadow-xs flex items-center justify-center shrink-0 p-1.5 cursor-pointer hover:scale-105 transition-transform">
                 <div class="w-full h-full anim-float">
                   ${renderAvatarSVG(m.avatar, m.status, m.accessory)}
@@ -701,7 +766,7 @@
               </div>
             </div>
 
-            <div onclick="openStatusModal('${m.id}')" class="cursor-pointer bg-white/80 rounded-2xl p-2.5 border border-slate-200/70 space-y-1.5">
+            <div onclick="requireAuthAndRun('${m.id}', 'status')" class="cursor-pointer bg-white/80 rounded-2xl p-2.5 border border-slate-200/70 space-y-1.5">
               <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] font-bold text-slate-600">
                 <span class="text-emerald-700">💼 ${formatDuration(totals.working)}</span>
                 <span class="text-amber-700">☕ ${formatDuration(totals.break)}</span>
@@ -721,12 +786,12 @@
 
             <div class="mt-2.5 flex items-center gap-2">
               ${m.status !== 'working' ? `
-                <button onclick="quickBackToOffice('${m.id}')" class="flex-1 py-1.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-2xs transition">
+                <button onclick="requireAuthAndRun('${m.id}', 'quickReturn')" class="flex-1 py-1.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-2xs transition">
                   🏢 ${t('사무실 복귀!', 'Volver a oficina')}
                 </button>
               ` : `
-                <button onclick="openStatusModal('${m.id}')" class="flex-1 py-1.5 px-3 rounded-xl bg-white hover:bg-amber-100/70 text-slate-700 border border-slate-200 text-xs font-bold transition">
-                  ✨ ${t('상태 변경', 'Cambiar estado')}
+                <button onclick="requireAuthAndRun('${m.id}', 'status')" class="flex-1 py-1.5 px-3 rounded-xl bg-white hover:bg-amber-100/70 text-slate-700 border border-slate-200 text-xs font-bold transition">
+                  ${hasPin && !isUnlocked ? '🔒' : '✨'} ${t('상태 변경', 'Cambiar estado')}
                 </button>
               `}
             </div>
@@ -765,7 +830,7 @@
       `).join('');
     }
 
-    function openStatusModal(memberId) {
+    function openStatusModalDirect(memberId) {
       const m = members.find(x => x.id === memberId);
       if (!m) return;
       selectedMemberId = memberId;
@@ -791,8 +856,6 @@
       document.getElementById('inputReason').value = m.reason || '';
       document.getElementById('inputReturnTime').value = formatCleanTime(m.returnTime) || '';
       document.getElementById('inputBubble').value = m.bubble || '';
-      document.getElementById('inputVerifyPin').value = '';
-      document.getElementById('pinVerifyBox').classList.toggle('hidden', !m.pin);
 
       renderModalStatusGrid();
       renderReasonChips();
@@ -850,10 +913,6 @@
     function saveStatusChange() {
       const m = members.find(x => x.id === selectedMemberId);
       if (!m) return;
-      if (m.pin && document.getElementById('inputVerifyPin').value.trim() !== String(m.pin)) {
-        showToast('🔒 PIN 번호가 일치하지 않습니다 · PIN incorrecto');
-        return;
-      }
 
       commitElapsedTime(m);
       const qNow = getQuitoNow();
@@ -872,13 +931,9 @@
       showToast(`✅ ${m.name}: ${t(st.ko, st.es)}`);
     }
 
-    function quickBackToOffice(memberId) {
+    function quickBackToOfficeDirect(memberId) {
       const m = members.find(x => x.id === memberId);
       if (!m) return;
-      if (m.pin) {
-        openStatusModal(memberId);
-        return;
-      }
       commitElapsedTime(m);
       const qNow = getQuitoNow();
       m.status = 'working';
@@ -893,18 +948,28 @@
 
     function bulkStatus(newStatus) {
       const qNow = getQuitoNow();
+      let skipped = 0;
       members.forEach(m => {
+        const hasPin = String(m.pin || '').trim().length > 0;
+        if (hasPin && !unlockedMembers.has(m.id)) {
+          skipped++;
+          return;
+        }
         commitElapsedTime(m);
         m.status = newStatus;
         m.since = qNow.short;
         m.reason = '';
         m.returnTime = '';
       });
-      pushLog({ id: 'ALL', name: 'Todo el equipo' }, 'BULK_UPDATE', `${STATUSES[newStatus].emoji} ${STATUSES[newStatus].es}`);
+      pushLog({ id: 'ALL', name: 'Equipo' }, 'BULK_UPDATE', `${STATUSES[newStatus].emoji} ${STATUSES[newStatus].es}`);
       saveLocal();
       syncAllToSheets();
       renderAll();
-      showToast(`${STATUSES[newStatus].emoji} ${t('전체 팀원 상태 일괄 변경 완료!', 'Estado actualizado para todos')}`);
+      if (skipped > 0) {
+        showToast(`${STATUSES[newStatus].emoji} 잠금되지 않은 팀원만 일괄 변경됨 (잠금 ${skipped}명 제외)`);
+      } else {
+        showToast(`${STATUSES[newStatus].emoji} ${t('전체 팀원 상태 일괄 변경 완료!', 'Estado actualizado para todos')}`);
+      }
     }
 
     function resetAllTimers() {
@@ -920,7 +985,7 @@
 
     function openAvatarStudioFromStatus() {
       closeModal('statusModal');
-      openAvatarStudio(selectedMemberId);
+      openAvatarStudioDirect(selectedMemberId);
     }
 
     function openAddMemberModal() {
@@ -936,7 +1001,7 @@
       openModal('avatarModal');
     }
 
-    function openAvatarStudio(memberId) {
+    function openAvatarStudioDirect(memberId) {
       const m = members.find(x => x.id === memberId);
       if (!m) return;
       studioMode = 'edit';
@@ -991,8 +1056,9 @@
       const qNow = getQuitoNow();
 
       if (studioMode === 'add') {
+        const newId = 'm' + Date.now();
         const newMember = {
-          id: 'm' + Date.now(),
+          id: newId,
           name,
           role: role || 'Equipo Quito',
           avatar: studioDraft.avatar,
@@ -1007,6 +1073,7 @@
           pin,
           totals: { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 }
         };
+        if (pin) unlockedMembers.add(newId);
         members.push(newMember);
         pushLog(newMember, 'ADD_MEMBER', 'Nuevo integrante agregado');
         persistAndSync(newMember, 'ADD_MEMBER');
@@ -1019,6 +1086,7 @@
           m.accessory = studioDraft.accessory;
           m.theme = studioDraft.theme;
           m.pin = pin;
+          if (pin) unlockedMembers.add(m.id);
           pushLog(m, 'UPDATE_AVATAR', `Avatar: ${studioDraft.avatar}`);
           persistAndSync(m, 'UPDATE_AVATAR');
         }
@@ -1057,6 +1125,7 @@
       localStorage.removeItem('quito_logs_v4');
       members = [];
       activityLogs = [];
+      unlockedMembers.clear();
       closeModal('sheetsModal');
       manualSync();
       renderAll();
