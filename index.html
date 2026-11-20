@@ -57,8 +57,8 @@
 <body class="text-slate-800 min-h-screen pb-14">
 
   <!-- Top Header -->
-  <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-amber-200/70 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-amber-200/70 shadow-sm">
+    <div class="max-w-[1440px] mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3">
         <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-300 to-orange-400 flex items-center justify-center text-2xl shadow-sm border-2 border-white">
           🦙
@@ -78,7 +78,6 @@
 
       <!-- Controls -->
       <div class="flex flex-wrap items-center gap-2">
-        <!-- Language Toggle -->
         <div class="inline-flex rounded-full bg-slate-100 p-1 border border-slate-200 text-xs font-bold">
           <button onclick="setLang('both')" id="lang-both" class="px-2.5 py-1 rounded-full transition">🌐 ES/KO</button>
           <button onclick="setLang('ko')" id="lang-ko" class="px-2.5 py-1 rounded-full transition">🇰🇷 KO</button>
@@ -90,12 +89,12 @@
         </button>
 
         <div class="inline-flex rounded-full bg-slate-100 p-1 border border-slate-200 text-xs font-bold gap-1">
-          <button onclick="bulkStatus('working')" class="px-2.5 py-1 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition" id="btnAllIn">☀️ 전원 출근</button>
-          <button onclick="bulkStatus('off')" class="px-2.5 py-1 rounded-full bg-slate-200/70 hover:bg-slate-300/70 text-slate-700 transition" id="btnAllOut">🌙 전원 퇴근</button>
-          <button onclick="resetAllTimers()" class="px-2.5 py-1 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 transition" id="btnResetTime">⏱️ 시간 초기화</button>
+          <button onclick="bulkStatus('working')" class="px-2.5 py-1 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition">☀️ 전원 출근</button>
+          <button onclick="bulkStatus('off')" class="px-2.5 py-1 rounded-full bg-slate-200/70 hover:bg-slate-300/70 text-slate-700 transition">🌙 전원 퇴근</button>
+          <button onclick="resetAllTimers()" class="px-2.5 py-1 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 transition">⏱️ 시간 초기화</button>
         </div>
 
-        <button onclick="openAddMemberModal()" class="px-3.5 py-1.5 rounded-full bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold text-xs shadow-sm transition flex items-center gap-1" id="btnAddMember">
+        <button onclick="openAddMemberModal()" class="px-3.5 py-1.5 rounded-full bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold text-xs shadow-sm transition flex items-center gap-1">
           ➕ 팀원 추가
         </button>
 
@@ -106,35 +105,44 @@
     </div>
 
     <!-- Filter Bar -->
-    <div class="max-w-7xl mx-auto px-4 pb-2.5 flex items-center gap-2 overflow-x-auto no-scrollbar" id="filterBar"></div>
+    <div class="max-w-[1440px] mx-auto px-4 pb-2.5 flex items-center gap-2 overflow-x-auto no-scrollbar" id="filterBar"></div>
   </header>
 
-  <!-- Main Content -->
-  <main class="max-w-7xl mx-auto px-4 pt-5 space-y-6">
-    <!-- Banner -->
-    <div class="bg-white/90 border border-amber-200/80 rounded-2xl px-4 py-3 flex flex-wrap items-center justify-between gap-2 shadow-sm">
-      <div class="text-xs sm:text-sm font-semibold text-slate-700" id="helperBanner">
-        📊 본인 카드를 클릭해 상태를 바꾸고, 아바타를 톡톡 쓰다듬어 보세요 💕 · Haz clic en tu tarjeta
-      </div>
-      <div class="text-xs font-bold text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200" id="activeFilterLabel">
-        전체 팀원 · Todo (9)
-      </div>
-    </div>
-
-    <!-- Team Cards Grid -->
-    <section id="teamGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></section>
-
-    <!-- Live Activity Feed -->
-    <section class="bg-white/95 border border-slate-200/90 rounded-3xl p-5 shadow-sm">
-      <div class="flex items-center justify-between mb-3">
-        <div>
-          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2" id="feedTitle">🔔 실시간 팀 이동 피드</h2>
-          <p class="text-xs text-slate-500" id="feedSub">Google Sheets 자동 기록 · Quito (UTC-5)</p>
+  <!-- Main 2-Column Layout: Left Team Cards + Right Live Activity Feed -->
+  <main class="max-w-[1440px] mx-auto px-4 pt-5">
+    <div class="flex flex-col lg:flex-row items-start gap-5">
+      
+      <!-- Left Column: Team Board -->
+      <div class="w-full lg:flex-1 space-y-4 min-w-0">
+        <!-- Banner -->
+        <div class="bg-white/90 border border-amber-200/80 rounded-2xl px-4 py-3 flex flex-wrap items-center justify-between gap-2 shadow-sm">
+          <div class="text-xs sm:text-sm font-semibold text-slate-700">
+            📊 본인 카드를 클릭해 상태를 바꾸고, 아바타를 톡톡 쓰다듬어 보세요 💕 · Haz clic en tu tarjeta
+          </div>
+          <div class="text-xs font-bold text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200" id="activeFilterLabel">
+            전체 팀원 (0)
+          </div>
         </div>
-        <span id="feedCount" class="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">0</span>
+
+        <!-- Team Cards Grid -->
+        <section id="teamGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></section>
       </div>
-      <div id="activityFeed" class="space-y-2 max-h-60 overflow-y-auto pr-1 text-xs"></div>
-    </section>
+
+      <!-- Right Column: Sticky Live Activity Feed -->
+      <aside class="w-full lg:w-[340px] xl:w-[370px] shrink-0 lg:sticky lg:top-[116px]">
+        <section class="bg-white/95 border-2 border-amber-200/80 rounded-3xl p-4 sm:p-5 shadow-sm">
+          <div class="flex items-center justify-between mb-3 pb-2.5 border-b border-slate-100">
+            <div>
+              <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">🔔 실시간 팀 이동 피드</h2>
+              <p class="text-[11px] text-slate-500 font-medium">Google Sheets 자동 기록 · Quito (UTC-5)</p>
+            </div>
+            <span id="feedCount" class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">0</span>
+          </div>
+          <div id="activityFeed" class="space-y-2 max-h-[calc(100vh-220px)] overflow-y-auto pr-1 text-xs"></div>
+        </section>
+      </aside>
+
+    </div>
   </main>
 
   <!-- Toast -->
@@ -157,13 +165,13 @@
 
       <!-- Status Grid -->
       <div class="mb-4">
-        <label class="block text-xs font-bold text-slate-600 mb-2" id="lblSelectStatus">상태 선택 · Seleccionar estado</label>
+        <label class="block text-xs font-bold text-slate-600 mb-2">상태 선택 · Seleccionar estado</label>
         <div id="statusButtonsGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
       </div>
 
       <!-- Outing Extra Fields -->
       <div id="outingFields" class="hidden mb-4 p-3.5 rounded-2xl bg-sky-50/80 border border-sky-200 space-y-2.5">
-        <label class="block text-xs font-bold text-sky-900" id="lblOutingReason">외출 사유 · Motivo de salida</label>
+        <label class="block text-xs font-bold text-sky-900">외출 사유 · Motivo de salida</label>
         <div class="flex flex-wrap gap-1.5" id="reasonChips"></div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <input type="text" id="inputReason" placeholder="사유 직접 입력 / Motivo..." class="sm:col-span-2 px-3 py-2 rounded-xl border border-sky-200 bg-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-sky-400">
@@ -173,7 +181,7 @@
 
       <!-- Speech Bubble Quick Chips -->
       <div class="mb-4">
-        <label class="block text-xs font-bold text-slate-600 mb-1.5" id="lblBubble">한마디 / 말풍선 메모 (선택) · Nota rápida</label>
+        <label class="block text-xs font-bold text-slate-600 mb-1.5">한마디 / 말풍선 메모 (선택) · Nota rápida</label>
         <div class="flex flex-wrap gap-1.5 mb-2" id="bubbleChips"></div>
         <input type="text" id="inputBubble" maxlength="40" placeholder="예: 오늘도 파이팅! 💪 / ¡Con toda!" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-amber-400">
       </div>
@@ -255,15 +263,15 @@
       <p class="text-xs text-slate-600 mb-3 leading-relaxed">
         이미 키토 오피스 전용 Google Apps Script 주소가 내장되어 있어 자동으로 동기화됩니다. 다른 시트로 변경할 때만 아래 주소를 수정해 주세요.
       </p>
-      <input type="text" id="gasUrlInput" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono mb-3 bg-slate-50">
-      <div class="flex flex-wrap gap-2 justify-end">
+      <input type="text" id="gasUrlInput" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono mb-4 bg-slate-50">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <button onclick="clearLocalCache()" class="px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold">🧹 로컬 캐시 비우기</button>
         <button onclick="saveGasUrl()" class="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold">✅ 연결 및 동기화</button>
       </div>
     </div>
   </div>
 
   <script>
-    // Embedded Google Apps Script Web App URL
     const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbyPwfPDgHVq8XB-HokiTXoWpMULiMCc9kNcKxwFZGH38_GZoPOy5N4L8bwuHzl4Emh0/exec';
     const urlParams = new URLSearchParams(window.location.search);
     let gasUrl = urlParams.get('gasUrl') || localStorage.getItem('quito_gas_url') || DEFAULT_GAS_URL;
@@ -272,17 +280,17 @@
     let currentFilter = 'all';
     let selectedMemberId = null;
     let selectedStatusInModal = 'working';
-    let studioMode = 'edit'; // 'edit' | 'add'
+    let studioMode = 'edit';
     let studioDraft = { avatar: 'alpaca', accessory: 'none', theme: 'amber' };
 
     const STATUSES = {
-      working:  { ko: '열일 중', es: 'Trabajando', emoji: '💻', badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-200', barColor: 'bg-emerald-500' },
-      break:    { ko: '휴식 중', es: 'En descanso', emoji: '☕', badgeBg: 'bg-amber-100 text-amber-800 border-amber-200', barColor: 'bg-amber-400' },
-      meal:     { ko: '식사 중', es: 'Almorzando', emoji: '🍱', badgeBg: 'bg-orange-100 text-orange-800 border-orange-200', barColor: 'bg-orange-400' },
-      cooking:  { ko: '요리 중', es: 'Cocinando', emoji: '🍳', badgeBg: 'bg-rose-100 text-rose-800 border-rose-200', barColor: 'bg-rose-400' },
-      outing:   { ko: '외출·외근', es: 'Salida / Trámite', emoji: '🚗', badgeBg: 'bg-sky-100 text-sky-800 border-sky-200', barColor: 'bg-sky-500' },
-      meeting:  { ko: '회의·교육', es: 'En reunión', emoji: '🎧', badgeBg: 'bg-violet-100 text-violet-800 border-violet-200', barColor: 'bg-violet-500' },
-      off:      { ko: '퇴근 완료', es: 'Fuera de oficina', emoji: '🌙', badgeBg: 'bg-slate-200 text-slate-700 border-slate-300', barColor: 'bg-slate-400' }
+      working:  { ko: '열일 중', es: 'Trabajando', emoji: '💻', badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+      break:    { ko: '휴식 중', es: 'En descanso', emoji: '☕', badgeBg: 'bg-amber-100 text-amber-800 border-amber-200' },
+      meal:     { ko: '식사 중', es: 'Almorzando', emoji: '🍱', badgeBg: 'bg-orange-100 text-orange-800 border-orange-200' },
+      cooking:  { ko: '요리 중', es: 'Cocinando', emoji: '🍳', badgeBg: 'bg-rose-100 text-rose-800 border-rose-200' },
+      outing:   { ko: '외출·외근', es: 'Salida / Trámite', emoji: '🚗', badgeBg: 'bg-sky-100 text-sky-800 border-sky-200' },
+      meeting:  { ko: '회의·교육', es: 'En reunión', emoji: '🎧', badgeBg: 'bg-violet-100 text-violet-800 border-violet-200' },
+      off:      { ko: '퇴근 완료', es: 'Fuera de oficina', emoji: '🌙', badgeBg: 'bg-slate-200 text-slate-700 border-slate-300' }
     };
 
     const AVATARS = [
@@ -316,7 +324,10 @@
       emerald: { name: 'Andes Mint', card: 'bg-emerald-50/70 border-emerald-200', avatarBg: 'bg-emerald-100/90' },
       sky:     { name: 'Quito Sky', card: 'bg-sky-50/70 border-sky-200', avatarBg: 'bg-sky-100/90' },
       violet:  { name: 'Lavender', card: 'bg-violet-50/70 border-violet-200', avatarBg: 'bg-violet-100/90' },
-      slate:   { name: 'Cloud Gray', card: 'bg-slate-50/90 border-slate-200', avatarBg: 'bg-slate-200/70' }
+      slate:   { name: 'Cloud Gray', card: 'bg-slate-50/90 border-slate-200', avatarBg: 'bg-slate-200/70' },
+      orange:  { name: 'Warm Apricot', card: 'bg-orange-50/70 border-orange-200', avatarBg: 'bg-orange-100/90' },
+      lime:    { name: 'Fresh Lime', card: 'bg-lime-50/70 border-lime-200', avatarBg: 'bg-lime-100/90' },
+      cyan:    { name: 'Ocean Breeze', card: 'bg-cyan-50/70 border-cyan-200', avatarBg: 'bg-cyan-100/90' }
     };
 
     const OUTING_REASONS = [
@@ -337,20 +348,8 @@
       { ko: '금방 돌아옵니다 🏃', es: 'Vuelvo enseguida 🏃' }
     ];
 
-    const DEFAULT_MEMBERS = [
-      { id: 'm1', name: 'Miguel', role: 'Coordinador Operativo', avatar: 'alpaca', accessory: 'andes_hat', theme: 'amber', status: 'working', reason: '', returnTime: '', bubble: '¡Con toda! 💪', since: '08:30', updatedAt: Date.now(), pin: '', totals: { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 } },
-      { id: 'm2', name: '셀리나 (Selina)', role: 'Operaciones y Eventos', avatar: 'spectacled_bear', accessory: 'ribbon', theme: 'rose', status: 'working', reason: '', returnTime: '', bubble: 'Lista para hoy ✨', since: '08:30', updatedAt: Date.now(), pin: '', totals: { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 } },
-      { id: 'm3', name: 'Daniel', role: 'Equipo Quito', avatar: 'capybara', accessory: 'maracuya_leaf', theme: 'emerald', status: 'working', reason: '', returnTime: '', bubble: 'Modo enfoque 🎯', since: '08:35', updatedAt: Date.now(), pin: '', totals: { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 } },
-      { id: 'm4', name: 'Joselin', role: 'Equipo Quito', avatar: 'blue_footed_booby', accessory: 'star_pin', theme: 'sky', status: 'working', reason: '', returnTime: '', bubble: 'Avanzando agenda 📋', since: '08:40', updatedAt: Date.now(), pin: '', totals: { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 } },
-      { id: 'm5', name: 'Ernan', role: 'Equipo Quito', avatar: 'coffee_bean', accessory: 'headphones', theme: 'amber', status: 'break', reason: '', returnTime: '', bubble: 'Café rápido ☕', since: '10:15', updatedAt: Date.now(), pin: '', totals: { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 } },
-      { id: 'm6', name: 'Lucia', role: 'Equipo Quito', avatar: 'strawberry_mochi', accessory: 'crown', theme: 'violet', status: 'working', reason: '', returnTime: '', bubble: '¡Con toda! 💪', since: '08:30', updatedAt: Date.now(), pin: '', totals: { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 } },
-      { id: 'm7', name: 'Daniela', role: 'Equipo Quito', avatar: 'maracuya', accessory: 'none', theme: 'emerald', status: 'outing', reason: 'Trámite bancario', returnTime: '11:30', bubble: 'En el banco 🏦', since: '10:00', updatedAt: Date.now(), pin: '', totals: { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 } },
-      { id: 'm8', name: 'Celeste', role: 'Equipo Quito', avatar: 'quito_cloud', accessory: 'none', theme: 'sky', status: 'working', reason: '', returnTime: '', bubble: 'Todo al día ✅', since: '08:40', updatedAt: Date.now(), pin: '', totals: { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 } },
-      { id: 'm9', name: 'Santiago', role: 'Equipo Quito', avatar: 'galapagos_penguin', accessory: 'none', theme: 'slate', status: 'working', reason: '', returnTime: '', bubble: 'Revisando notas 📝', since: '08:30', updatedAt: Date.now(), pin: '', totals: { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 } }
-    ];
-
-    let members = JSON.parse(localStorage.getItem('quito_members_v3') || 'null') || DEFAULT_MEMBERS;
-    let activityLogs = JSON.parse(localStorage.getItem('quito_logs_v3') || '[]');
+    let members = JSON.parse(localStorage.getItem('quito_members_v4') || '[]');
+    let activityLogs = JSON.parse(localStorage.getItem('quito_logs_v4') || '[]');
 
     function getQuitoNow() {
       const now = new Date();
@@ -364,6 +363,21 @@
         timeZone: 'America/Guayaquil', weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit'
       }).format(now);
       return { time: fmtTime, short: fmtShort, date: fmtDate, ms: now.getTime() };
+    }
+
+    // Format Google Sheets time value cleanly (handles 1899-12-30T... ISO strings)
+    function formatCleanTime(val) {
+      if (!val) return '';
+      const str = String(val).trim();
+      if (str.includes('T') && str.includes('1899')) {
+        const d = new Date(str);
+        if (!isNaN(d.getTime())) {
+          return new Intl.DateTimeFormat('es-EC', {
+            timeZone: 'America/Guayaquil', hour: '2-digit', minute: '2-digit', hour12: false
+          }).format(d);
+        }
+      }
+      return str;
     }
 
     function t(ko, es) {
@@ -382,9 +396,10 @@
 
     function getLiveTotals(m) {
       const base = { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0, ...(m.totals || {}) };
-      if (m.status && m.status !== 'off' && m.updatedAt) {
-        const elapsedSec = Math.max(0, (Date.now() - Number(m.updatedAt)) / 1000);
-        if (base[m.status] !== undefined) {
+      const ts = Number(m.updatedAt);
+      if (m.status && m.status !== 'off' && !isNaN(ts) && ts > 0) {
+        const elapsedSec = Math.max(0, (Date.now() - ts) / 1000);
+        if (base[m.status] !== undefined && elapsedSec < 86400) {
           base[m.status] += elapsedSec;
         }
       }
@@ -393,16 +408,16 @@
 
     function commitElapsedTime(m) {
       if (!m.totals) m.totals = { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 };
-      if (m.status && m.status !== 'off' && m.updatedAt) {
-        const elapsedSec = Math.max(0, (Date.now() - Number(m.updatedAt)) / 1000);
-        if (m.totals[m.status] !== undefined) {
+      const ts = Number(m.updatedAt);
+      if (m.status && m.status !== 'off' && !isNaN(ts) && ts > 0) {
+        const elapsedSec = Math.max(0, (Date.now() - ts) / 1000);
+        if (m.totals[m.status] !== undefined && elapsedSec < 86400) {
           m.totals[m.status] += elapsedSec;
         }
       }
       m.updatedAt = Date.now();
     }
 
-    // Cute Chibi SVG Renderer
     function renderAvatarSVG(avatarId, status = 'working', accessory = 'none') {
       const isSleeping = status === 'off';
       const isCooking = status === 'cooking';
@@ -411,7 +426,6 @@
       const isMeal = status === 'meal';
       const isMeeting = status === 'meeting';
 
-      // Base head shapes per character
       let faceSvg = '';
       if (avatarId === 'alpaca') {
         faceSvg = `
@@ -472,7 +486,6 @@
           <line x1="65" y1="68" x2="67" y2="79" stroke="#facc15" stroke-width="2.5"/>
         `;
       } else {
-        // Mini-Me Variants
         const hairColor = avatarId === 'mini_bob' ? '#7c2d12' : '#1e293b';
         faceSvg = `
           <circle cx="50" cy="54" r="25" fill="#fde68a" stroke="#78350f" stroke-width="2.5"/>
@@ -482,7 +495,6 @@
         `;
       }
 
-      // Eyes & Mouth based on status
       let eyesSvg = '';
       if (isSleeping) {
         eyesSvg = `
@@ -513,20 +525,17 @@
         `;
       }
 
-      // Glasses for mini_glasses
       const glassesSvg = avatarId === 'mini_glasses' && !isOuting ? `
         <circle cx="40" cy="50" r="7" fill="none" stroke="#334155" stroke-width="2"/>
         <circle cx="60" cy="50" r="7" fill="none" stroke="#334155" stroke-width="2"/>
         <line x1="47" y1="50" x2="53" y2="50" stroke="#334155" stroke-width="2"/>
       ` : '';
 
-      // Cheeks
       const cheeksSvg = `
         <ellipse cx="32" cy="57" rx="4.5" ry="2.5" fill="#fda4af" opacity="0.75"/>
         <ellipse cx="68" cy="57" rx="4.5" ry="2.5" fill="#fda4af" opacity="0.75"/>
       `;
 
-      // Chef Hat if cooking overrides accessory
       let accSvg = '';
       if (isCooking) {
         accSvg = `
@@ -560,7 +569,6 @@
         accSvg = `<text x="61" y="34" font-size="16">🎀</text>`;
       }
 
-      // Status Prop at bottom
       let propSvg = '';
       if (isCooking) {
         propSvg = `
@@ -627,17 +635,32 @@
       const grid = document.getElementById('teamGrid');
       const filtered = currentFilter === 'all' ? members : members.filter(m => m.status === currentFilter);
 
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full bg-white/90 border-2 border-dashed border-amber-300 rounded-3xl p-10 text-center space-y-3">
+            <div class="text-4xl">🦙✨</div>
+            <h3 class="text-base font-bold text-slate-800">${t('등록된 팀원이 없습니다 · No hay integrantes aún', 'No hay integrantes aún')}</h3>
+            <p class="text-xs text-slate-500">${t('상단의 [➕ 팀원 추가] 버튼을 눌러 팀원을 등록하고 캐릭터를 꾸며보세요!', 'Haz clic en [➕ 팀원 추가] para agregar al equipo.')}</p>
+            <button onclick="openAddMemberModal()" class="px-4 py-2 rounded-full bg-amber-400 hover:bg-amber-500 text-slate-900 text-xs font-bold shadow-xs">
+              ➕ 첫 팀원 등록하기 · Agregar integrante
+            </button>
+          </div>
+        `;
+        return;
+      }
+
       grid.innerHTML = filtered.map(m => {
         const st = STATUSES[m.status] || STATUSES.working;
         const th = THEMES[m.theme] || THEMES.amber;
         const totals = getLiveTotals(m);
         const totalSum = totals.working + totals.break + totals.meal + totals.cooking + totals.outing + totals.meeting;
-
         const pct = (val) => totalSum > 0 ? Math.max(4, Math.round((val / totalSum) * 100)) : 0;
+
+        const cleanSince = formatCleanTime(m.since) || '08:30';
+        const cleanReturn = formatCleanTime(m.returnTime);
 
         return `
           <div class="relative rounded-3xl border-2 ${th.card} p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
-            <!-- Top Row: Edit Button & Status Pill -->
             <div class="flex items-center justify-between gap-2 mb-3">
               <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${st.badgeBg}">
                 <span>${st.emoji}</span>
@@ -651,9 +674,8 @@
               </div>
             </div>
 
-            <!-- Middle Row: Interactive Pettable Avatar + Info -->
             <div onclick="openStatusModal('${m.id}')" class="cursor-pointer flex items-center gap-3.5 mb-3">
-              <div onclick="event.stopPropagation(); petAvatar(this)" id="av-box-${m.id}" class="relative w-20 h-20 rounded-2xl ${th.avatarBg} border-2 border-white shadow-xs flex items-center justify-center shrink-0 p-1.5 cursor-pointer hover:scale-105 transition-transform">
+              <div onclick="event.stopPropagation(); petAvatar(this)" class="relative w-20 h-20 rounded-2xl ${th.avatarBg} border-2 border-white shadow-xs flex items-center justify-center shrink-0 p-1.5 cursor-pointer hover:scale-105 transition-transform">
                 <div class="w-full h-full anim-float">
                   ${renderAvatarSVG(m.avatar, m.status, m.accessory)}
                 </div>
@@ -663,8 +685,8 @@
                 <h3 class="text-base font-bold text-slate-800 truncate">${escapeHtml(m.name)}</h3>
                 <p class="text-xs text-slate-500 font-medium truncate mb-1.5">${escapeHtml(m.role || 'Equipo Quito')}</p>
                 <div class="text-[11px] font-semibold text-slate-600 flex items-center gap-1.5">
-                  <span>🕒 ${m.since || '08:30'} ~</span>
-                  ${m.status === 'outing' && m.returnTime ? `<span class="px-1.5 py-0.5 rounded-md bg-sky-100 text-sky-800 font-bold">복귀 ${m.returnTime}</span>` : ''}
+                  <span>🕒 ${cleanSince} ~</span>
+                  ${m.status === 'outing' && cleanReturn ? `<span class="px-1.5 py-0.5 rounded-md bg-sky-100 text-sky-800 font-bold">복귀 ${cleanReturn}</span>` : ''}
                 </div>
                 ${m.status === 'outing' && m.reason ? `
                   <div class="mt-1 text-xs font-bold text-sky-800 bg-sky-100/80 px-2 py-0.5 rounded-lg truncate">
@@ -679,7 +701,6 @@
               </div>
             </div>
 
-            <!-- Accumulated Time Summary Bar -->
             <div onclick="openStatusModal('${m.id}')" class="cursor-pointer bg-white/80 rounded-2xl p-2.5 border border-slate-200/70 space-y-1.5">
               <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] font-bold text-slate-600">
                 <span class="text-emerald-700">💼 ${formatDuration(totals.working)}</span>
@@ -698,7 +719,6 @@
               </div>
             </div>
 
-            <!-- Quick Action Footer -->
             <div class="mt-2.5 flex items-center gap-2">
               ${m.status !== 'working' ? `
                 <button onclick="quickBackToOffice('${m.id}')" class="flex-1 py-1.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-2xs transition">
@@ -731,26 +751,25 @@
       const feed = document.getElementById('activityFeed');
       document.getElementById('feedCount').textContent = activityLogs.length;
       if (activityLogs.length === 0) {
-        feed.innerHTML = `<p class="text-slate-400 py-4 text-center">${t('아직 오늘 기록된 이동 내역이 없습니다.', 'Aún no hay movimientos registrados hoy.')}</p>`;
+        feed.innerHTML = `<p class="text-slate-400 py-8 text-center leading-relaxed">${t('아직 오늘 기록된 이동 내역이 없습니다.', 'Aún no hay movimientos registrados hoy.')}</p>`;
         return;
       }
-      feed.innerHTML = activityLogs.slice(0, 30).map(log => `
-        <div class="flex items-center justify-between gap-2 bg-slate-50 px-3 py-2 rounded-xl border border-slate-100">
-          <div class="flex items-center gap-2 min-w-0">
-            <span class="font-mono text-[11px] font-bold text-slate-400 shrink-0">${log.time}</span>
-            <span class="font-bold text-slate-800 shrink-0">${escapeHtml(log.name)}</span>
-            <span class="text-slate-600 truncate">→ ${escapeHtml(log.detail)}</span>
+      feed.innerHTML = activityLogs.slice(0, 40).map(log => `
+        <div class="flex flex-col gap-0.5 bg-slate-50/90 px-3 py-2 rounded-xl border border-slate-100">
+          <div class="flex items-center justify-between gap-2">
+            <span class="font-bold text-slate-800 truncate">${escapeHtml(log.name)}</span>
+            <span class="font-mono text-[10px] font-bold text-slate-400 shrink-0">${log.time}</span>
           </div>
+          <span class="text-[11px] text-slate-600 truncate">${escapeHtml(log.detail)}</span>
         </div>
       `).join('');
     }
 
-    // Status Modal Logic
     function openStatusModal(memberId) {
       const m = members.find(x => x.id === memberId);
       if (!m) return;
       selectedMemberId = memberId;
-      selectedStatusInModal = m.status || 'working';
+      selectedStatusInModal = STATUSES[m.status] ? m.status : 'working';
 
       const th = THEMES[m.theme] || THEMES.amber;
       const prev = document.getElementById('modalAvatarPreview');
@@ -770,7 +789,7 @@
       `;
 
       document.getElementById('inputReason').value = m.reason || '';
-      document.getElementById('inputReturnTime').value = m.returnTime || '';
+      document.getElementById('inputReturnTime').value = formatCleanTime(m.returnTime) || '';
       document.getElementById('inputBubble').value = m.bubble || '';
       document.getElementById('inputVerifyPin').value = '';
       document.getElementById('pinVerifyBox').classList.toggle('hidden', !m.pin);
@@ -899,7 +918,6 @@
       showToast(`⏱️ ${t('누적 시간이 초기화되었습니다.', 'Tiempos reiniciados.')}`);
     }
 
-    // Avatar & Profile Studio
     function openAvatarStudioFromStatus() {
       closeModal('statusModal');
       openAvatarStudio(selectedMemberId);
@@ -952,11 +970,14 @@
         </button>
       `).join('');
 
-      document.getElementById('themePickerGrid').innerHTML = Object.entries(THEMES).map(([k, val]) => `
-        <button type="button" onclick="studioDraft.theme='${k}'; renderStudioPickers()" class="px-3 py-1.5 rounded-xl border-2 text-xs font-bold transition ${val.card} ${studioDraft.theme === k ? 'ring-2 ring-violet-500' : ''}">
-          ${val.name}
-        </button>
-      `).join('');
+      document.getElementById('themePickerGrid').innerHTML = ['amber', 'rose', 'emerald', 'sky', 'violet', 'slate'].map(k => {
+        const val = THEMES[k];
+        return `
+          <button type="button" onclick="studioDraft.theme='${k}'; renderStudioPickers()" class="px-3 py-1.5 rounded-xl border-2 text-xs font-bold transition ${val.card} ${studioDraft.theme === k ? 'ring-2 ring-violet-500' : ''}">
+            ${val.name}
+          </button>
+        `;
+      }).join('');
     }
 
     function saveAvatarStudio() {
@@ -1026,10 +1047,20 @@
       }
     }
 
-    // Google Sheets Bidirectional Sync
     function saveLocal() {
-      localStorage.setItem('quito_members_v3', JSON.stringify(members));
-      localStorage.setItem('quito_logs_v3', JSON.stringify(activityLogs));
+      localStorage.setItem('quito_members_v4', JSON.stringify(members));
+      localStorage.setItem('quito_logs_v4', JSON.stringify(activityLogs));
+    }
+
+    function clearLocalCache() {
+      localStorage.removeItem('quito_members_v4');
+      localStorage.removeItem('quito_logs_v4');
+      members = [];
+      activityLogs = [];
+      closeModal('sheetsModal');
+      manualSync();
+      renderAll();
+      showToast('🧹 로컬 캐시 초기화 완료');
     }
 
     function pushLog(m, actionType, detail) {
@@ -1105,9 +1136,9 @@
         theme: m.theme || 'amber',
         status: m.status || 'working',
         reason: m.reason || '',
-        returnTime: m.returnTime || '',
+        returnTime: formatCleanTime(m.returnTime) || '',
         bubble: m.bubble || '',
-        since: m.since || '08:30',
+        since: formatCleanTime(m.since) || '08:30',
         updatedAt: m.updatedAt || Date.now(),
         pin: m.pin || ''
       };
@@ -1119,14 +1150,18 @@
       try {
         const res = await fetch(`${gasUrl}?t=${Date.now()}`);
         const json = await res.json();
-        if (json && json.ok && Array.isArray(json.members) && json.members.length > 0) {
+        if (json && json.ok && Array.isArray(json.members)) {
           const oldMap = Object.fromEntries(members.map(m => [m.id, m]));
           members = json.members.map(row => {
             const prev = oldMap[row.id] || {};
+            const parsedTs = Number(row.updatedAt);
             return {
               ...prev,
               ...row,
-              updatedAt: Number(row.updatedAt) || prev.updatedAt || Date.now(),
+              status: STATUSES[row.status] ? row.status : 'working',
+              since: formatCleanTime(row.since) || '08:30',
+              returnTime: formatCleanTime(row.returnTime) || '',
+              updatedAt: (!isNaN(parsedTs) && parsedTs > 0) ? parsedTs : (prev.updatedAt || Date.now()),
               totals: prev.totals || { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 }
             };
           });
@@ -1176,7 +1211,7 @@
         const tot = getLiveTotals(m);
         let extra = '';
         if (m.status === 'outing' && m.reason) extra += ` · 📍 ${m.reason}`;
-        if (m.status === 'outing' && m.returnTime) extra += ` (Regreso ${m.returnTime})`;
+        if (m.status === 'outing' && m.returnTime) extra += ` (Regreso ${formatCleanTime(m.returnTime)})`;
         lines.push(`${st.emoji} *${m.name}*: ${st.es}${extra} [💼${formatDuration(tot.working)} / ☕${formatDuration(tot.break)} / 🍱${formatDuration(tot.meal)} / 🍳${formatDuration(tot.cooking)}]`);
       });
       navigator.clipboard.writeText(lines.join('\n')).then(() => {
@@ -1235,13 +1270,12 @@
       renderActivityFeed();
     }
 
-    // Init
     setLang(currentLang);
     updateClock();
     setInterval(updateClock, 1000);
-    setInterval(renderGrid, 15000); // Live timer refresh
+    setInterval(renderGrid, 15000);
     manualSync();
-    setInterval(manualSync, 12000); // Google Sheets polling every 12s
+    setInterval(manualSync, 12000);
   </script>
 </body>
 </html>
