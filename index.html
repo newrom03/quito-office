@@ -138,9 +138,12 @@
           <div class="flex items-center justify-between mb-3 pb-2.5 border-b border-slate-100">
             <div>
               <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">🔔 실시간 팀 이동 피드</h2>
-              <p class="text-[11px] text-slate-500 font-medium">Google Sheets 자동 기록 · Quito (UTC-5)</p>
+              <p class="text-[11px] text-slate-500 font-medium">Google Sheets 전체 동기화 · Quito (UTC-5)</p>
             </div>
-            <span id="feedCount" class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">0</span>
+            <div class="flex items-center gap-1.5">
+              <button onclick="manualSync()" title="피드 새로고침" class="p-1 rounded-full hover:bg-slate-100 text-xs">🔄</button>
+              <span id="feedCount" class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">0</span>
+            </div>
           </div>
           <div id="activityFeed" class="space-y-2 max-h-[calc(100vh-220px)] overflow-y-auto pr-1 text-xs"></div>
         </section>
@@ -152,7 +155,7 @@
   <!-- Toast -->
   <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 hidden bg-slate-900 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-lg"></div>
 
-  <!-- PIN Gatekeeper Modal (Blocks access BEFORE opening edit modals) -->
+  <!-- PIN Gatekeeper Modal -->
   <div id="pinGateModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
     <div id="pinGateCard" class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border-2 border-rose-200 text-center">
       <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-rose-100 text-2xl flex items-center justify-center">🔒</div>
@@ -294,9 +297,8 @@
     let studioMode = 'edit';
     let studioDraft = { avatar: 'alpaca', accessory: 'none', theme: 'amber' };
 
-    // Remember unlocked member IDs during this browser session so owner doesn't re-type repeatedly
     const unlockedMembers = new Set();
-    let pendingGateAction = null; // { type: 'status' | 'studio' | 'quickReturn', memberId }
+    let pendingGateAction = null;
 
     const STATUSES = {
       working:  { ko: '열일 중', es: 'Trabajando', emoji: '💻', badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
@@ -394,6 +396,25 @@
       return str;
     }
 
+    function extractShortTimeFromTimestamp(ts) {
+      if (!ts) return '';
+      const str = String(ts).trim();
+      const match = str.match(/(\d{1,2}:\d{2})(?::\d{2})?/);
+      return match ? match[1] : str;
+    }
+
+    function formatSheetLogDetail(row) {
+      const act = String(row.action_type || '');
+      const stObj = STATUSES[row.status];
+      if (act === 'ADD_MEMBER') return '➕ 새 팀원 등록 · Nuevo integrante';
+      if (act === 'UPDATE_AVATAR') return `🎨 프로필 꾸미기 · ${row.avatar_config || ''}`;
+      if (act === 'RETURN_OFFICE') return '🏢 사무실 복귀 · Regreso a oficina';
+      if (stObj) {
+        return `${stObj.emoji} ${stObj.es}${row.reason ? ' (' + row.reason + ')' : ''}${row.bubble ? ' · "' + row.bubble + '"' : ''}`;
+      }
+      return row.status || act || 'Actualización';
+    }
+
     function t(ko, es) {
       if (currentLang === 'ko') return ko;
       if (currentLang === 'es') return es;
@@ -432,7 +453,6 @@
       m.updatedAt = Date.now();
     }
 
-    // Gatekeeper Function: Checks PIN BEFORE opening any edit screen
     function requireAuthAndRun(memberId, actionType) {
       const m = members.find(x => x.id === memberId);
       if (!m) return;
@@ -823,7 +843,7 @@
         <div class="flex flex-col gap-0.5 bg-slate-50/90 px-3 py-2 rounded-xl border border-slate-100">
           <div class="flex items-center justify-between gap-2">
             <span class="font-bold text-slate-800 truncate">${escapeHtml(log.name)}</span>
-            <span class="font-mono text-[10px] font-bold text-slate-400 shrink-0">${log.time}</span>
+            <span class="font-mono text-[10px] font-bold text-slate-400 shrink-0">${escapeHtml(log.time)}</span>
           </div>
           <span class="text-[11px] text-slate-600 truncate">${escapeHtml(log.detail)}</span>
         </div>
@@ -923,7 +943,7 @@
       m.bubble = document.getElementById('inputBubble').value.trim();
 
       const st = STATUSES[m.status];
-      const detail = `${st.emoji} ${st.es}${m.reason ? ' (' + m.reason + ')' : ''}`;
+      const detail = `${st.emoji} ${st.es}${m.reason ? ' (' + m.reason + ')' : ''}${m.bubble ? ' · "' + m.bubble + '"' : ''}`;
       pushLog(m, 'STATUS_CHANGE', detail);
       persistAndSync(m, 'STATUS_CHANGE');
       closeModal('statusModal');
@@ -940,7 +960,7 @@
       m.since = qNow.short;
       m.reason = '';
       m.returnTime = '';
-      pushLog(m, 'RETURN_OFFICE', '💻 Trabajando (Regreso a oficina)');
+      pushLog(m, 'RETURN_OFFICE', '🏢 사무실 복귀 · Regreso a oficina');
       persistAndSync(m, 'RETURN_OFFICE');
       renderAll();
       showToast(`🏢 ${m.name} ${t('사무실 복귀 완료!', 'regresó a la oficina')}`);
@@ -1075,7 +1095,7 @@
         };
         if (pin) unlockedMembers.add(newId);
         members.push(newMember);
-        pushLog(newMember, 'ADD_MEMBER', 'Nuevo integrante agregado');
+        pushLog(newMember, 'ADD_MEMBER', '➕ 새 팀원 등록 · Nuevo integrante');
         persistAndSync(newMember, 'ADD_MEMBER');
       } else {
         const m = members.find(x => x.id === selectedMemberId);
@@ -1087,7 +1107,7 @@
           m.theme = studioDraft.theme;
           m.pin = pin;
           if (pin) unlockedMembers.add(m.id);
-          pushLog(m, 'UPDATE_AVATAR', `Avatar: ${studioDraft.avatar}`);
+          pushLog(m, 'UPDATE_AVATAR', `🎨 프로필 꾸미기 · ${studioDraft.avatar}`);
           persistAndSync(m, 'UPDATE_AVATAR');
         }
       }
@@ -1172,6 +1192,7 @@
           })
         });
         setSyncBadge('ok');
+        setTimeout(manualSync, 1500);
       } catch (e) {
         setSyncBadge('err');
       }
@@ -1234,6 +1255,16 @@
               totals: prev.totals || { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 }
             };
           });
+          if (Array.isArray(json.logs) && json.logs.length > 0) {
+            activityLogs = json.logs.map(row => ({
+              time: extractShortTimeFromTimestamp(row.timestamp_quito),
+              date: row.date_quito || '',
+              id: row.member_id || '',
+              name: row.member_name || '',
+              action: row.action_type || '',
+              detail: formatSheetLogDetail(row)
+            }));
+          }
           saveLocal();
           renderAll();
         }
