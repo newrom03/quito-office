@@ -130,7 +130,7 @@
       <div class="w-full lg:flex-1 space-y-3.5 min-w-0">
         <div class="bg-white/90 border border-amber-200/80 rounded-2xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 shadow-sm">
           <div class="text-xs sm:text-sm font-semibold text-slate-700">
-            📊 카드를 눌러 상태를 변경하고, 잠깐 외출이나 호출은 <span class="text-sky-700 font-bold">[🚗 잠깐외출]</span> · <span class="text-rose-600 font-bold">[👉 콕 찌르기]</span>를 눌러 보세요!
+            📊 카드를 눌러 상태를 변경하고, 잠깐 휴식이나 호출은 <span class="text-amber-700 font-bold">[☕ 잠깐휴식]</span> · <span class="text-rose-600 font-bold">[👉 콕 찌르기]</span>를 눌러 보세요!
           </div>
           <div class="text-xs font-bold text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200" id="activeFilterLabel">
             전체 팀원 (0)
@@ -483,7 +483,7 @@
       if (act === 'ADD_MEMBER') return '➕ 새 팀원 등록 · Nuevo integrante';
       if (act === 'UPDATE_AVATAR') return `🎨 프로필 꾸미기 · ${row.avatar_config || ''}`;
       if (act === 'RETURN_OFFICE') return '🏢 사무실 복귀 · Regreso a oficina';
-      if (act === 'QUICK_OUTING') return '🚗 잠깐 외출 · Salida rápida';
+      if (act === 'QUICK_BREAK') return '☕ 잠깐휴식 · Descanso rápido';
       if (stObj) {
         return `${stObj.emoji} ${stObj.es}${row.reason ? ' (' + row.reason + ')' : ''}${row.bubble ? ' · "' + row.bubble + '"' : ''}`;
       }
@@ -677,8 +677,8 @@
         openAvatarStudioDirect(memberId);
       } else if (actionType === 'quickReturn') {
         quickBackToOfficeDirect(memberId);
-      } else if (actionType === 'quickOuting') {
-        quickOutingDirect(memberId);
+      } else if (actionType === 'quickBreak') {
+        quickBreakDirect(memberId);
       }
     }
 
@@ -1094,8 +1094,8 @@
                   🏢 ${t('사무실 복귀!', 'Volver')}
                 </button>
               ` : `
-                <button type="button" onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'quickOuting')" class="flex-1 py-1.5 px-2 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 text-[11px] font-bold transition truncate">
-                  🚗 ${t('잠깐외출', 'Salida')}
+                <button type="button" onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'quickBreak')" class="flex-1 py-1.5 px-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-[11px] font-bold transition truncate">
+                  ☕ ${t('잠깐휴식', 'Descanso')}
                 </button>
                 <button type="button" onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'status')" class="py-1.5 px-2 rounded-xl bg-white hover:bg-amber-100/70 text-slate-700 border border-slate-200 text-[11px] font-bold transition shrink-0">
                   ${hasPin && !isUnlocked ? '🔒' : '✨'}
@@ -1270,20 +1270,20 @@
       persistAndSync(m, 'STATUS_CHANGE');
     }
 
-    function quickOutingDirect(memberId) {
+    function quickBreakDirect(memberId) {
       const m = members.find(x => x.id === memberId);
       if (!m) return;
       commitElapsedTime(m);
       const qNow = getQuitoNow();
-      m.status = 'outing';
+      m.status = 'break';
       m.since = qNow.short;
-      m.reason = t('잠깐 외출', 'Salida rápida');
+      m.reason = t('잠깐휴식', 'Descanso rápido');
       m.returnTime = '';
       localEditGuard[m.id] = Date.now() + 6000;
-      pushLog(m, 'QUICK_OUTING', '🚗 잠깐 외출 · Salida rápida');
+      pushLog(m, 'QUICK_BREAK', '☕ 잠깐휴식 · Descanso rápido');
       renderAll();
-      showToast(`🚗 ${m.name} ${t('잠깐 외출 시작!', 'salió un momento')}`);
-      persistAndSync(m, 'QUICK_OUTING');
+      showToast(`☕ ${m.name} ${t('잠깐휴식 시작!', 'en descanso rápido')}`);
+      persistAndSync(m, 'QUICK_BREAK');
     }
 
     function quickBackToOfficeDirect(memberId) {
