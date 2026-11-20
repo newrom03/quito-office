@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tablero Quito · Estado de Oficina en Tiempo Real</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Fredoka', 'Noto Sans KR', sans-serif;
+      background-color: #fdfbf7;
+      background-image: radial-gradient(#e6dec8 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-4px); }
+    }
+    @keyframes squishPop {
+      0% { transform: scale(1, 1); }
+      30% { transform: scale(1.22, 0.78); }
+      60% { transform: scale(0.88, 1.14); }
+      80% { transform: scale(1.06, 0.95); }
+      100% { transform: scale(1, 1); }
+    }
+    @keyframes steamRise {
+      0% { opacity: 0.2; transform: translateY(2px) scale(0.9); }
+      50% { opacity: 0.9; transform: translateY(-4px) scale(1.05); }
+      100% { opacity: 0; transform: translateY(-10px) scale(1.1); }
+    }
+    @keyframes zzzFloat {
+      0%, 100% { transform: translate(0, 0) scale(0.9); opacity: 0.6; }
+      50% { transform: translate(4px, -6px) scale(1.15); opacity: 1; }
+    }
+    @keyframes heartBurst {
+      0% { opacity: 1; transform: translate(-50%, 0) scale(0.5); }
+      100% { opacity: 0; transform: translate(-50%, -34px) scale(1.3); }
+    }
+    .anim-float { animation: floatSlow 3s ease-in-out infinite; }
+    .anim-squish { animation: squishPop 0.45s ease-out; }
+    .anim-steam { animation: steamRise 1.8s ease-in-out infinite; }
+    .anim-zzz { animation: zzzFloat 2.2s ease-in-out infinite; }
+    .heart-pop {
+      position: absolute;
+      left: 50%;
+      top: 10%;
+      pointer-events: none;
+      animation: heartBurst 0.85s ease-out forwards;
+      font-size: 1.25rem;
+      z-index: 30;
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="text-slate-800 min-h-screen pb-14">
+
+  <!-- Top Header -->
+  <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-amber-200/70 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-300 to-orange-400 flex items-center justify-center text-2xl shadow-sm border-2 border-white">
+          🦙
+        </div>
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <h1 class="text-lg sm:text-xl font-bold text-slate-800 tracking-tight" id="appTitle">키토 오피스 · Tablero Quito</h1>
+            <span id="syncBadge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
+              <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+              <span id="syncText">Conectando...</span>
+            </span>
+            <button onclick="manualSync()" title="Sincronizar ahora" class="p-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs transition">🔄</button>
+          </div>
+          <p class="text-xs text-slate-500 font-medium" id="quitoClock">Quito, Ecuador · Cargando...</p>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="flex flex-wrap items-center gap-2">
+        <!-- Language Toggle -->
+        <div class="inline-flex rounded-full bg-slate-100 p-1 border border-slate-200 text-xs font-bold">
+          <button onclick="setLang('both')" id="lang-both" class="px-2.5 py-1 rounded-full transition">🌐 ES/KO</button>
+          <button onclick="setLang('ko')" id="lang-ko" class="px-2.5 py-1 rounded-full transition">🇰🇷 KO</button>
+          <button onclick="setLang('es')" id="lang-es" class="px-2.5 py-1 rounded-full transition">🇪🇨 ES</button>
+        </div>
+
+        <button onclick="openModal('sheetsModal')" class="px-3 py-1.5 rounded-full bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold flex items-center gap-1.5 transition">
+          ⚙️ Google Sheets
+        </button>
+
+        <div class="inline-flex rounded-full bg-slate-100 p-1 border border-slate-200 text-xs font-bold gap-1">
+          <button onclick="bulkStatus('working')" class="px-2.5 py-1 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition" id="btnAllIn">☀️ 전원 출근</button>
+          <button onclick="bulkStatus('off')" class="px-2.5 py-1 rounded-full bg-slate-200/70 hover:bg-slate-300/70 text-slate-700 transition" id="btnAllOut">🌙 전원 퇴근</button>
+          <button onclick="resetAllTimers()" class="px-2.5 py-1 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 transition" id="btnResetTime">⏱️ 시간 초기화</button>
+        </div>
+
+        <button onclick="openAddMemberModal()" class="px-3.5 py-1.5 rounded-full bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold text-xs shadow-sm transition flex items-center gap-1" id="btnAddMember">
+          ➕ 팀원 추가
+        </button>
+
+        <button onclick="copyWhatsAppReport()" class="px-3.5 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-1.5">
+          💬 Reporte WhatsApp
+        </button>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="max-w-7xl mx-auto px-4 pb-2.5 flex items-center gap-2 overflow-x-auto no-scrollbar" id="filterBar"></div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 pt-5 space-y-6">
+    <!-- Banner -->
+    <div class="bg-white/90 border border-amber-200/80 rounded-2xl px-4 py-3 flex flex-wrap items-center justify-between gap-2 shadow-sm">
+      <div class="text-xs sm:text-sm font-semibold text-slate-700" id="helperBanner">
+        📊 본인 카드를 클릭해 상태를 바꾸고, 아바타를 톡톡 쓰다듬어 보세요 💕 · Haz clic en tu tarjeta
+      </div>
+      <div class="text-xs font-bold text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200" id="activeFilterLabel">
+        전체 팀원 · Todo (9)
+      </div>
+    </div>
+
+    <!-- Team Cards Grid -->
+    <section id="teamGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></section>
+
+    <!-- Live Activity Feed -->
+    <section class="bg-white/95 border border-slate-200/90 rounded-3xl p-5 shadow-sm">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2" id="feedTitle">🔔 실시간 팀 이동 피드</h2>
+          <p class="text-xs text-slate-500" id="feedSub">Google Sheets 자동 기록 · Quito (UTC-5)</p>
+        </div>
+        <span id="feedCount" class="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">0</span>
+      </div>
+      <div id="activityFeed" class="space-y-2 max-h-60 overflow-y-auto pr-1 text-xs"></div>
+    </section>
+  </main>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 hidden bg-slate-900 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-lg"></div>
+
+  <!-- Status Change Modal -->
+  <div id="statusModal" class="fixed inset-0 z-40 hidden bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-amber-100 max-h-[92vh] overflow-y-auto">
+      <div class="flex items-start justify-between gap-3 mb-4">
+        <div class="flex items-center gap-3">
+          <div id="modalAvatarPreview" class="w-16 h-16 rounded-2xl flex items-center justify-center border border-slate-200 shadow-xs"></div>
+          <div>
+            <h3 id="modalMemberName" class="text-lg font-bold text-slate-800"></h3>
+            <p id="modalMemberRole" class="text-xs text-slate-500 font-medium"></p>
+            <div id="modalMemberTimers" class="flex flex-wrap gap-1.5 mt-1.5 text-[11px] font-bold"></div>
+          </div>
+        </div>
+        <button onclick="closeModal('statusModal')" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold">✕</button>
+      </div>
+
+      <!-- Status Grid -->
+      <div class="mb-4">
+        <label class="block text-xs font-bold text-slate-600 mb-2" id="lblSelectStatus">상태 선택 · Seleccionar estado</label>
+        <div id="statusButtonsGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
+      </div>
+
+      <!-- Outing Extra Fields -->
+      <div id="outingFields" class="hidden mb-4 p-3.5 rounded-2xl bg-sky-50/80 border border-sky-200 space-y-2.5">
+        <label class="block text-xs font-bold text-sky-900" id="lblOutingReason">외출 사유 · Motivo de salida</label>
+        <div class="flex flex-wrap gap-1.5" id="reasonChips"></div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <input type="text" id="inputReason" placeholder="사유 직접 입력 / Motivo..." class="sm:col-span-2 px-3 py-2 rounded-xl border border-sky-200 bg-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-sky-400">
+          <input type="time" id="inputReturnTime" class="px-3 py-2 rounded-xl border border-sky-200 bg-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-sky-400">
+        </div>
+      </div>
+
+      <!-- Speech Bubble Quick Chips -->
+      <div class="mb-4">
+        <label class="block text-xs font-bold text-slate-600 mb-1.5" id="lblBubble">한마디 / 말풍선 메모 (선택) · Nota rápida</label>
+        <div class="flex flex-wrap gap-1.5 mb-2" id="bubbleChips"></div>
+        <input type="text" id="inputBubble" maxlength="40" placeholder="예: 오늘도 파이팅! 💪 / ¡Con toda!" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-amber-400">
+      </div>
+
+      <!-- PIN Verification if locked -->
+      <div id="pinVerifyBox" class="hidden mb-4 p-3 rounded-2xl bg-rose-50 border border-rose-200">
+        <label class="block text-xs font-bold text-rose-800 mb-1">🔒 개인 PIN 4자리 입력 · Ingresa tu PIN</label>
+        <input type="password" id="inputVerifyPin" maxlength="4" inputmode="numeric" placeholder="••••" class="w-32 px-3 py-1.5 rounded-xl border border-rose-300 bg-white text-sm font-bold tracking-widest text-center">
+      </div>
+
+      <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
+        <button onclick="openAvatarStudioFromStatus()" class="px-3.5 py-2 rounded-xl bg-violet-50 hover:bg-violet-100 text-violet-700 border border-violet-200 text-xs font-bold transition">
+          🎨 캐릭터·프로필 꾸미기
+        </button>
+        <div class="flex items-center gap-2">
+          <button onclick="closeModal('statusModal')" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">취소</button>
+          <button onclick="saveStatusChange()" class="px-5 py-2 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-900 text-xs font-bold shadow-sm">✅ 저장하기 · Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Avatar & Profile Studio Modal -->
+  <div id="avatarModal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl border border-violet-100 max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-slate-800" id="studioTitle">🎨 아바타 & 프로필 스튜디오</h3>
+        <button onclick="closeModal('avatarModal')" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold">✕</button>
+      </div>
+
+      <!-- Live Preview -->
+      <div class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200/80 mb-4">
+        <div id="studioPreviewBox" class="w-24 h-24 rounded-3xl flex items-center justify-center shadow-sm border-2 border-white shrink-0"></div>
+        <div class="flex-1 space-y-2">
+          <input type="text" id="studioName" placeholder="이름 / Nombre" class="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-sm font-bold">
+          <input type="text" id="studioRole" placeholder="역할 / Rol (예: Coordinador)" class="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-medium">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-600">🔒 잠금 PIN (선택 4자리):</span>
+            <input type="text" id="studioPin" maxlength="4" inputmode="numeric" placeholder="미설정" class="w-24 px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-xs font-bold text-center">
+          </div>
+        </div>
+      </div>
+
+      <!-- Character Picker -->
+      <div class="mb-4">
+        <label class="block text-xs font-bold text-slate-700 mb-2">1. 캐릭터 선택 (12종) · Elige tu personaje</label>
+        <div id="avatarPickerGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-2"></div>
+      </div>
+
+      <!-- Accessory Picker -->
+      <div class="mb-4">
+        <label class="block text-xs font-bold text-slate-700 mb-2">2. 머리 액세서리 (7종) · Accesorio</label>
+        <div id="accessoryPickerGrid" class="flex flex-wrap gap-1.5"></div>
+      </div>
+
+      <!-- Theme Picker -->
+      <div class="mb-5">
+        <label class="block text-xs font-bold text-slate-700 mb-2">3. 카드 배경 테마 (6종) · Color de tarjeta</label>
+        <div id="themePickerGrid" class="flex flex-wrap gap-2"></div>
+      </div>
+
+      <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+        <button id="btnDeleteMember" onclick="deleteCurrentMember()" class="px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold hidden">🗑️ 팀원 삭제</button>
+        <div class="flex items-center gap-2 ml-auto">
+          <button onclick="closeModal('avatarModal')" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">취소</button>
+          <button onclick="saveAvatarStudio()" class="px-5 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold shadow-sm">💾 저장하기 · Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Google Sheets Modal -->
+  <div id="sheetsModal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-sky-100">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-lg font-bold text-slate-800">⚙️ Google Sheets 실시간 연동 설정</h3>
+        <button onclick="closeModal('sheetsModal')" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold">✕</button>
+      </div>
+      <p class="text-xs text-slate-600 mb-3 leading-relaxed">
+        이미 키토 오피스 전용 Google Apps Script 주소가 내장되어 있어 자동으로 동기화됩니다. 다른 시트로 변경할 때만 아래 주소를 수정해 주세요.
+      </p>
+      <input type="text" id="gasUrlInput" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono mb-3 bg-slate-50">
+      <div class="flex flex-wrap gap-2 justify-end">
+        <button onclick="saveGasUrl()" class="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold">✅ 연결 및 동기화</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Embedded Google Apps Script Web App URL
+    const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbyPwfPDgHVq8XB-HokiTXoWpMULiMCc9kNcKxwFZGH38_GZoPOy5N4L8bwuHzl4Emh0/exec';
+    const urlParams = new URLSearchParams(window.location.search);
+    let gasUrl = urlParams.get('gasUrl') || localStorage.getItem('quito_gas_url') || DEFAULT_GAS_URL;
+
+    let currentLang = localStorage.getItem('quito_lang') || 'both';
+    let currentFilter = 'all';
+    let selectedMemberId = null;
+    let selectedStatusInModal = 'working';
+    let studioMode = 'edit'; // 'edit' | 'add'
+    let studioDraft = { avatar: 'alpaca', accessory: 'none', theme: 'amber' };
+
+    const STATUSES = {
+      working:  { ko: '열일 중', es: 'Trabajando', emoji: '💻', badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-200', barColor: 'bg-emerald-500' },
+      break:    { ko: '휴식 중', es: 'En descanso', emoji: '☕', badgeBg: 'bg-amber-100 text-amber-800 border-amber-200', barColor: 'bg-amber-400' },
+      meal:     { ko: '식사 중', es: 'Almorzando', emoji: '🍱', badgeBg: 'bg-orange-100 text-orange-800 border-orange-200', barColor: 'bg-orange-400' },
+      cooking:  { ko: '요리 중', es: 'Cocinando', emoji: '🍳', badgeBg: 'bg-rose-100 text-rose-800 border-rose-200', barColor: 'bg-rose-400' },
+      outing:   { ko: '외출·외근', es: 'Salida / Trámite', emoji: '🚗', badgeBg: 'bg-sky-100 text-sky-800 border-sky-200', barColor: 'bg-sky-500' },
+      meeting:  { ko: '회의·교육', es: 'En reunión', emoji: '🎧', badgeBg: 'bg-violet-100 text-violet-800 border-violet-200', barColor: 'bg-violet-500' },
+      off:      { ko: '퇴근 완료', es: 'Fuera de oficina', emoji: '🌙', badgeBg: 'bg-slate-200 text-slate-700 border-slate-300', barColor: 'bg-slate-400' }
+    };
+
+    const AVATARS = [
+      { id: 'alpaca', label: '알파카 · Alpaca' },
+      { id: 'spectacled_bear', label: '안경곰 · Oso' },
+      { id: 'capybara', label: '카피바라 · Capibara' },
+      { id: 'blue_footed_booby', label: '부비새 · Piquero' },
+      { id: 'galapagos_penguin', label: '펭귄 · Pingüino' },
+      { id: 'strawberry_mochi', label: '딸기모찌 · Mochi' },
+      { id: 'coffee_bean', label: '원두콩 · Café' },
+      { id: 'maracuya', label: '마라쿠야 · Maracuyá' },
+      { id: 'quito_cloud', label: '판초구름 · Nube' },
+      { id: 'mini_glasses', label: '안경미니 · Mini Lentes' },
+      { id: 'mini_bob', label: '단발미니 · Mini Bob' },
+      { id: 'mini_cap', label: '모자미니 · Mini Gorra' }
+    ];
+
+    const ACCESSORIES = [
+      { id: 'none', label: '기본 · Ninguno', icon: '✨' },
+      { id: 'andes_hat', label: '안데스모자 · Sombrero', icon: '🎩' },
+      { id: 'maracuya_leaf', label: '새싹잎 · Hojita', icon: '🌱' },
+      { id: 'crown', label: '왕관 · Corona', icon: '👑' },
+      { id: 'headphones', label: '헤드폰 · Audífonos', icon: '🎧' },
+      { id: 'star_pin', label: '별핀 · Estrella', icon: '⭐' },
+      { id: 'ribbon', label: '리본 · Lazo', icon: '🎀' }
+    ];
+
+    const THEMES = {
+      amber:   { name: 'Warm Cream', card: 'bg-amber-50/70 border-amber-200', avatarBg: 'bg-amber-100/90' },
+      rose:    { name: 'Soft Peach', card: 'bg-rose-50/70 border-rose-200', avatarBg: 'bg-rose-100/90' },
+      emerald: { name: 'Andes Mint', card: 'bg-emerald-50/70 border-emerald-200', avatarBg: 'bg-emerald-100/90' },
+      sky:     { name: 'Quito Sky', card: 'bg-sky-50/70 border-sky-200', avatarBg: 'bg-sky-100/90' },
+      violet:  { name: 'Lavender', card: 'bg-violet-50/70 border-violet-200', avatarBg: 'bg-violet-100/90' },
+      slate:   { name: 'Cloud Gray', card: 'bg-slate-50/90 border-slate-200', avatarBg: 'bg-slate-200/70' }
+    };
+
+    const OUTING_REASONS = [
+      { ko: '🏦 은행 업무', es: 'Trámite bancario' },
+      { ko: '🤝 외부 미팅', es: 'Reunión externa' },
+      { ko: '🏛️ 시청·행정', es: 'Municipio / Gestión' },
+      { ko: '🛍️ 물품 구매', es: 'Compras / Suministros' },
+      { ko: '🏫 문화센터 이동', es: 'Centro Cultural' },
+      { ko: '🏥 병원·약국', es: 'Cita médica' }
+    ];
+
+    const BUBBLE_PRESETS = [
+      { ko: '오늘도 파이팅! 💪', es: '¡Con toda! 💪' },
+      { ko: '맛있는 점심 요리 중 🍳', es: 'Preparando almuerzo 🍳' },
+      { ko: '초집중 업무 모드 🎯', es: 'Modo enfoque 🎯' },
+      { ko: '버스 이동 중 🚌', es: 'En el trole / bus 🚌' },
+      { ko: '잠깐 커피 한잔 ☕', es: 'Café rápido ☕' },
+      { ko: '금방 돌아옵니다 🏃', es: 'Vuelvo enseguida 🏃' }
+    ];
+
+    const DEFAULT_MEMBERS = [
+      { id: 'm1', name: 'Miguel', role: 'Coordinador Operativo', avatar: 'alpaca', accessory: 'andes_hat', theme: 'amber', status: 'working', reason: '', returnTime: '', bubble: '¡Con toda! 💪', since: '08:30', updatedAt: Date.now(), pin: '', totals: { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 } },
+      { id: 'm2', name: '셀리나 (Selina)', role: 'Operaciones y Eventos', avatar: 'spectacled_bear', accessory: 'ribbon', theme: 'rose', status: 'working', reason: '', returnTime: '', bubble: 'Lista para hoy ✨', since: '08:30', updatedAt: Date.now(), pin: '', totals: { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 } },
+      { id: 'm3', name: 'Daniel', role: 'Equipo Quito', avatar: 'capybara', accessory: 'maracuya_leaf', theme: 'emerald', status: 'working', reason: '', returnTime: '', bubble: 'Modo enfoque 🎯', since: '08:35', updatedAt: Date.now(), pin: '', totals: { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 } },
+      { id: 'm4', name: 'Joselin', role: 'Equipo Quito', avatar: 'blue_footed_booby', accessory: 'star_pin', theme: 'sky', status: 'working', reason: '', returnTime: '', bubble: 'Avanzando agenda 📋', since: '08:40', updatedAt: Date.now(), pin: '', totals: { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 } },
+      { id: 'm5', name: 'Ernan', role: 'Equipo Quito', avatar: 'coffee_bean', accessory: 'headphones', theme: 'amber', status: 'break', reason: '', returnTime: '', bubble: 'Café rápido ☕', since: '10:15', updatedAt: Date.now(), pin: '', totals: { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 } },
+      { id: 'm6', name: 'Lucia', role: 'Equipo Quito', avatar: 'strawberry_mochi', accessory: 'crown', theme: 'violet', status: 'working', reason: '', returnTime: '', bubble: '¡Con toda! 💪', since: '08:30', updatedAt: Date.now(), pin: '', totals: { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 } },
+      { id: 'm7', name: 'Daniela', role: 'Equipo Quito', avatar: 'maracuya', accessory: 'none', theme: 'emerald', status: 'outing', reason: 'Trámite bancario', returnTime: '11:30', bubble: 'En el banco 🏦', since: '10:00', updatedAt: Date.now(), pin: '', totals: { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 } },
+      { id: 'm8', name: 'Celeste', role: 'Equipo Quito', avatar: 'quito_cloud', accessory: 'none', theme: 'sky', status: 'working', reason: '', returnTime: '', bubble: 'Todo al día ✅', since: '08:40', updatedAt: Date.now(), pin: '', totals: { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 } },
+      { id: 'm9', name: 'Santiago', role: 'Equipo Quito', avatar: 'galapagos_penguin', accessory: 'none', theme: 'slate', status: 'working', reason: '', returnTime: '', bubble: 'Revisando notas 📝', since: '08:30', updatedAt: Date.now(), pin: '', totals: { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 } }
+    ];
+
+    let members = JSON.parse(localStorage.getItem('quito_members_v3') || 'null') || DEFAULT_MEMBERS;
+    let activityLogs = JSON.parse(localStorage.getItem('quito_logs_v3') || '[]');
+
+    function getQuitoNow() {
+      const now = new Date();
+      const fmtTime = new Intl.DateTimeFormat('es-EC', {
+        timeZone: 'America/Guayaquil', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+      }).format(now);
+      const fmtShort = new Intl.DateTimeFormat('es-EC', {
+        timeZone: 'America/Guayaquil', hour: '2-digit', minute: '2-digit', hour12: false
+      }).format(now);
+      const fmtDate = new Intl.DateTimeFormat('es-EC', {
+        timeZone: 'America/Guayaquil', weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit'
+      }).format(now);
+      return { time: fmtTime, short: fmtShort, date: fmtDate, ms: now.getTime() };
+    }
+
+    function t(ko, es) {
+      if (currentLang === 'ko') return ko;
+      if (currentLang === 'es') return es;
+      return `${ko} · ${es}`;
+    }
+
+    function formatDuration(sec) {
+      const s = Math.max(0, Math.floor(sec));
+      const h = Math.floor(s / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      if (h > 0) return `${h}h ${m}m`;
+      return `${m}m`;
+    }
+
+    function getLiveTotals(m) {
+      const base = { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0, ...(m.totals || {}) };
+      if (m.status && m.status !== 'off' && m.updatedAt) {
+        const elapsedSec = Math.max(0, (Date.now() - Number(m.updatedAt)) / 1000);
+        if (base[m.status] !== undefined) {
+          base[m.status] += elapsedSec;
+        }
+      }
+      return base;
+    }
+
+    function commitElapsedTime(m) {
+      if (!m.totals) m.totals = { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 };
+      if (m.status && m.status !== 'off' && m.updatedAt) {
+        const elapsedSec = Math.max(0, (Date.now() - Number(m.updatedAt)) / 1000);
+        if (m.totals[m.status] !== undefined) {
+          m.totals[m.status] += elapsedSec;
+        }
+      }
+      m.updatedAt = Date.now();
+    }
+
+    // Cute Chibi SVG Renderer
+    function renderAvatarSVG(avatarId, status = 'working', accessory = 'none') {
+      const isSleeping = status === 'off';
+      const isCooking = status === 'cooking';
+      const isOuting = status === 'outing';
+      const isBreak = status === 'break';
+      const isMeal = status === 'meal';
+      const isMeeting = status === 'meeting';
+
+      // Base head shapes per character
+      let faceSvg = '';
+      if (avatarId === 'alpaca') {
+        faceSvg = `
+          <ellipse cx="32" cy="24" rx="6" ry="13" fill="#fffbeb" stroke="#78350f" stroke-width="2.5"/>
+          <ellipse cx="68" cy="24" rx="6" ry="13" fill="#fffbeb" stroke="#78350f" stroke-width="2.5"/>
+          <circle cx="50" cy="54" r="28" fill="#fef3c7" stroke="#78350f" stroke-width="2.5"/>
+          <circle cx="38" cy="32" r="8" fill="#fffbeb"/><circle cx="50" cy="29" r="9" fill="#fffbeb"/><circle cx="62" cy="32" r="8" fill="#fffbeb"/>
+          <ellipse cx="50" cy="60" rx="12" ry="9" fill="#fffbeb"/>
+        `;
+      } else if (avatarId === 'spectacled_bear') {
+        faceSvg = `
+          <circle cx="28" cy="30" r="9" fill="#451a03"/><circle cx="72" cy="30" r="9" fill="#451a03"/>
+          <circle cx="50" cy="54" r="28" fill="#5c2d16" stroke="#291206" stroke-width="2.5"/>
+          <circle cx="39" cy="50" r="9" fill="#fef3c7"/><circle cx="61" cy="50" r="9" fill="#fef3c7"/>
+          <ellipse cx="50" cy="62" rx="11" ry="8" fill="#fde68a"/>
+        `;
+      } else if (avatarId === 'capybara') {
+        faceSvg = `
+          <circle cx="30" cy="33" r="7" fill="#92400e"/><circle cx="70" cy="33" r="7" fill="#92400e"/>
+          <rect x="22" y="30" width="56" height="48" rx="22" fill="#b45309" stroke="#451a03" stroke-width="2.5"/>
+          <ellipse cx="50" cy="61" rx="15" ry="10" fill="#d97706"/>
+        `;
+      } else if (avatarId === 'blue_footed_booby') {
+        faceSvg = `
+          <circle cx="50" cy="52" r="27" fill="#f8fafc" stroke="#334155" stroke-width="2.5"/>
+          <path d="M23 50 Q50 38 77 50" fill="none" stroke="#94a3b8" stroke-width="2"/>
+          <polygon points="44,57 56,57 50,70" fill="#38bdf8" stroke="#0369a1" stroke-width="2"/>
+          <ellipse cx="38" cy="79" rx="8" ry="4" fill="#0ea5e9"/><ellipse cx="62" cy="79" rx="8" ry="4" fill="#0ea5e9"/>
+        `;
+      } else if (avatarId === 'galapagos_penguin') {
+        faceSvg = `
+          <circle cx="50" cy="53" r="27" fill="#1e293b" stroke="#0f172a" stroke-width="2.5"/>
+          <ellipse cx="50" cy="58" rx="19" ry="18" fill="#ffffff"/>
+          <polygon points="45,58 55,58 50,66" fill="#f97316"/>
+        `;
+      } else if (avatarId === 'strawberry_mochi') {
+        faceSvg = `
+          <path d="M22 65 Q22 30 50 30 Q78 30 78 65 Q78 78 50 78 Q22 78 22 65 Z" fill="#ffe4e6" stroke="#be123c" stroke-width="2.5"/>
+          <ellipse cx="50" cy="30" rx="8" ry="5" fill="#f43f5e"/>
+          <path d="M44 27 L50 31 L56 27" stroke="#15803d" stroke-width="2.5" fill="none"/>
+        `;
+      } else if (avatarId === 'coffee_bean') {
+        faceSvg = `
+          <ellipse cx="50" cy="53" rx="24" ry="29" fill="#6f4e37" stroke="#3e2723" stroke-width="2.5"/>
+          <path d="M50 25 Q44 53 50 81" stroke="#3e2723" stroke-width="2" fill="none" opacity="0.45"/>
+        `;
+      } else if (avatarId === 'maracuya') {
+        faceSvg = `
+          <circle cx="50" cy="53" r="27" fill="#facc15" stroke="#a16207" stroke-width="2.5"/>
+          <circle cx="50" cy="53" r="21" fill="#fef08a"/>
+          <circle cx="36" cy="42" r="2" fill="#713f12"/><circle cx="64" cy="43" r="2" fill="#713f12"/><circle cx="38" cy="66" r="2" fill="#713f12"/>
+        `;
+      } else if (avatarId === 'quito_cloud') {
+        faceSvg = `
+          <path d="M26 68 Q16 68 18 56 Q16 42 30 40 Q38 26 54 30 Q68 26 73 40 Q85 44 82 57 Q84 68 72 68 Z" fill="#f0f9ff" stroke="#0284c7" stroke-width="2.5"/>
+          <path d="M25 68 L75 68 L79 79 L21 79 Z" fill="#ef4444" stroke="#991b1b" stroke-width="2"/>
+          <line x1="35" y1="68" x2="33" y2="79" stroke="#facc15" stroke-width="2.5"/>
+          <line x1="65" y1="68" x2="67" y2="79" stroke="#facc15" stroke-width="2.5"/>
+        `;
+      } else {
+        // Mini-Me Variants
+        const hairColor = avatarId === 'mini_bob' ? '#7c2d12' : '#1e293b';
+        faceSvg = `
+          <circle cx="50" cy="54" r="25" fill="#fde68a" stroke="#78350f" stroke-width="2.5"/>
+          <path d="M25 50 Q26 26 50 26 Q74 26 75 50 Q66 38 50 40 Q34 38 25 50 Z" fill="${hairColor}"/>
+          ${avatarId === 'mini_bob' ? `<rect x="22" y="46" width="7" height="22" rx="3" fill="${hairColor}"/><rect x="71" y="46" width="7" height="22" rx="3" fill="${hairColor}"/>` : ''}
+          ${avatarId === 'mini_cap' ? `<path d="M26 38 Q50 20 74 38 Z" fill="#2563eb"/><rect x="48" y="34" width="32" height="5" rx="2.5" fill="#1d4ed8"/>` : ''}
+        `;
+      }
+
+      // Eyes & Mouth based on status
+      let eyesSvg = '';
+      if (isSleeping) {
+        eyesSvg = `
+          <path d="M35 51 Q40 55 45 51" stroke="#1e293b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M55 51 Q60 55 65 51" stroke="#1e293b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <text x="72" y="32" font-size="12" font-weight="bold" fill="#6366f1" class="anim-zzz">Zzz</text>
+        `;
+      } else if (isOuting) {
+        eyesSvg = `
+          <rect x="31" y="45" width="16" height="10" rx="3" fill="#0f172a"/>
+          <rect x="53" y="45" width="16" height="10" rx="3" fill="#0f172a"/>
+          <line x1="47" y1="49" x2="53" y2="49" stroke="#0f172a" stroke-width="2.5"/>
+          <path d="M44 62 Q50 67 56 62" stroke="#1e293b" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+        `;
+      } else if (isBreak || isMeal) {
+        eyesSvg = `
+          <path d="M35 51 Q40 46 45 51" stroke="#1e293b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M55 51 Q60 46 65 51" stroke="#1e293b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <circle cx="50" cy="62" r="4" fill="#fb7185"/>
+        `;
+      } else {
+        eyesSvg = `
+          <circle cx="40" cy="50" r="3.5" fill="#1e293b"/>
+          <circle cx="60" cy="50" r="3.5" fill="#1e293b"/>
+          <circle cx="41" cy="49" r="1.2" fill="#ffffff"/>
+          <circle cx="61" cy="49" r="1.2" fill="#ffffff"/>
+          <path d="M45 61 Q50 66 55 61" stroke="#1e293b" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+        `;
+      }
+
+      // Glasses for mini_glasses
+      const glassesSvg = avatarId === 'mini_glasses' && !isOuting ? `
+        <circle cx="40" cy="50" r="7" fill="none" stroke="#334155" stroke-width="2"/>
+        <circle cx="60" cy="50" r="7" fill="none" stroke="#334155" stroke-width="2"/>
+        <line x1="47" y1="50" x2="53" y2="50" stroke="#334155" stroke-width="2"/>
+      ` : '';
+
+      // Cheeks
+      const cheeksSvg = `
+        <ellipse cx="32" cy="57" rx="4.5" ry="2.5" fill="#fda4af" opacity="0.75"/>
+        <ellipse cx="68" cy="57" rx="4.5" ry="2.5" fill="#fda4af" opacity="0.75"/>
+      `;
+
+      // Chef Hat if cooking overrides accessory
+      let accSvg = '';
+      if (isCooking) {
+        accSvg = `
+          <path d="M34 26 Q30 14 42 15 Q50 8 58 15 Q70 14 66 26 Z" fill="#ffffff" stroke="#64748b" stroke-width="2"/>
+          <rect x="36" y="24" width="28" height="6" rx="2" fill="#f1f5f9" stroke="#64748b" stroke-width="1.8"/>
+        `;
+      } else if (accessory === 'andes_hat') {
+        accSvg = `
+          <ellipse cx="50" cy="26" rx="22" ry="5" fill="#b45309" stroke="#451a03" stroke-width="2"/>
+          <path d="M37 26 L40 15 L60 15 L63 26 Z" fill="#d97706" stroke="#451a03" stroke-width="2"/>
+          <rect x="38" y="22" width="24" height="3" fill="#ef4444"/>
+        `;
+      } else if (accessory === 'maracuya_leaf') {
+        accSvg = `
+          <path d="M50 27 L50 18" stroke="#15803d" stroke-width="2.5"/>
+          <ellipse cx="56" cy="17" rx="7" ry="4" transform="rotate(-20 56 17)" fill="#4ade80" stroke="#15803d" stroke-width="1.8"/>
+        `;
+      } else if (accessory === 'crown') {
+        accSvg = `
+          <polygon points="36,27 39,15 45,21 50,13 55,21 61,15 64,27" fill="#facc15" stroke="#a16207" stroke-width="2" stroke-linejoin="round"/>
+        `;
+      } else if (accessory === 'headphones' || isMeeting) {
+        accSvg = `
+          <path d="M22 50 Q22 22 50 22 Q78 22 78 50" fill="none" stroke="#4f46e5" stroke-width="4"/>
+          <rect x="17" y="43" width="7" height="15" rx="3.5" fill="#6366f1"/>
+          <rect x="76" y="43" width="7" height="15" rx="3.5" fill="#6366f1"/>
+        `;
+      } else if (accessory === 'star_pin') {
+        accSvg = `<text x="63" y="34" font-size="16">⭐</text>`;
+      } else if (accessory === 'ribbon') {
+        accSvg = `<text x="61" y="34" font-size="16">🎀</text>`;
+      }
+
+      // Status Prop at bottom
+      let propSvg = '';
+      if (isCooking) {
+        propSvg = `
+          <ellipse cx="52" cy="83" rx="16" ry="5" fill="#334155"/>
+          <line x1="68" y1="83" x2="84" y2="80" stroke="#1e293b" stroke-width="3.5" stroke-linecap="round"/>
+          <ellipse cx="51" cy="82" rx="9" ry="3" fill="#ffffff"/>
+          <circle cx="51" cy="82" r="3" fill="#facc15"/>
+          <path d="M45 74 Q43 69 45 65" stroke="#94a3b8" stroke-width="1.8" fill="none" class="anim-steam"/>
+          <path d="M56 74 Q58 69 56 65" stroke="#94a3b8" stroke-width="1.8" fill="none" class="anim-steam"/>
+        `;
+      } else if (status === 'working') {
+        propSvg = `
+          <polygon points="32,73 68,73 72,86 28,86" fill="#94a3b8" stroke="#334155" stroke-width="2"/>
+          <circle cx="50" cy="79" r="2.5" fill="#ffffff"/>
+        `;
+      } else if (isBreak) {
+        propSvg = `
+          <rect x="41" y="72" width="18" height="14" rx="3" fill="#ffffff" stroke="#78350f" stroke-width="2"/>
+          <path d="M46 69 Q44 64 46 60" stroke="#94a3b8" stroke-width="1.8" fill="none" class="anim-steam"/>
+        `;
+      } else if (isMeal) {
+        propSvg = `
+          <path d="M35 75 Q50 88 65 75 Z" fill="#f97316" stroke="#9a3412" stroke-width="2"/>
+          <circle cx="50" cy="73" r="6" fill="#ffffff"/>
+        `;
+      }
+
+      return `
+        <svg viewBox="0 0 100 94" class="w-full h-full overflow-visible select-none">
+          ${faceSvg}
+          ${cheeksSvg}
+          ${eyesSvg}
+          ${glassesSvg}
+          ${accSvg}
+          ${propSvg}
+        </svg>
+      `;
+    }
+
+    function renderFilterBar() {
+      const bar = document.getElementById('filterBar');
+      const counts = { all: members.length };
+      Object.keys(STATUSES).forEach(k => counts[k] = members.filter(m => m.status === k).length);
+
+      let html = `
+        <button onclick="setFilter('all')" class="px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border transition ${currentFilter === 'all' ? 'bg-slate-800 text-white border-slate-800 shadow-xs' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}">
+          🌈 ${t('전체', 'Todo')} (${counts.all})
+        </button>
+      `;
+      Object.entries(STATUSES).forEach(([key, st]) => {
+        const active = currentFilter === key;
+        html += `
+          <button onclick="setFilter('${key}')" class="px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border transition ${active ? 'bg-amber-400 text-slate-900 border-amber-500 shadow-xs' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}">
+            ${st.emoji} ${t(st.ko, st.es)} (${counts[key]})
+          </button>
+        `;
+      });
+      bar.innerHTML = html;
+      const activeName = currentFilter === 'all' ? t('전체 팀원', 'Todo') : t(STATUSES[currentFilter].ko, STATUSES[currentFilter].es);
+      document.getElementById('activeFilterLabel').textContent = `${activeName} (${counts[currentFilter]})`;
+    }
+
+    function renderGrid() {
+      const grid = document.getElementById('teamGrid');
+      const filtered = currentFilter === 'all' ? members : members.filter(m => m.status === currentFilter);
+
+      grid.innerHTML = filtered.map(m => {
+        const st = STATUSES[m.status] || STATUSES.working;
+        const th = THEMES[m.theme] || THEMES.amber;
+        const totals = getLiveTotals(m);
+        const totalSum = totals.working + totals.break + totals.meal + totals.cooking + totals.outing + totals.meeting;
+
+        const pct = (val) => totalSum > 0 ? Math.max(4, Math.round((val / totalSum) * 100)) : 0;
+
+        return `
+          <div class="relative rounded-3xl border-2 ${th.card} p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
+            <!-- Top Row: Edit Button & Status Pill -->
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${st.badgeBg}">
+                <span>${st.emoji}</span>
+                <span>${t(st.ko, st.es)}</span>
+              </span>
+              <div class="flex items-center gap-1">
+                ${m.pin ? '<span title="PIN Protegido" class="text-xs px-1.5 py-0.5 rounded-full bg-white/80 text-slate-500">🔒</span>' : ''}
+                <button onclick="event.stopPropagation(); openAvatarStudio('${m.id}')" title="캐릭터·프로필 꾸미기" class="w-8 h-8 rounded-full bg-white/90 hover:bg-violet-100 text-slate-700 border border-slate-200/80 flex items-center justify-center text-sm shadow-2xs transition">
+                  🎨
+                </button>
+              </div>
+            </div>
+
+            <!-- Middle Row: Interactive Pettable Avatar + Info -->
+            <div onclick="openStatusModal('${m.id}')" class="cursor-pointer flex items-center gap-3.5 mb-3">
+              <div onclick="event.stopPropagation(); petAvatar(this)" id="av-box-${m.id}" class="relative w-20 h-20 rounded-2xl ${th.avatarBg} border-2 border-white shadow-xs flex items-center justify-center shrink-0 p-1.5 cursor-pointer hover:scale-105 transition-transform">
+                <div class="w-full h-full anim-float">
+                  ${renderAvatarSVG(m.avatar, m.status, m.accessory)}
+                </div>
+              </div>
+
+              <div class="min-w-0 flex-1">
+                <h3 class="text-base font-bold text-slate-800 truncate">${escapeHtml(m.name)}</h3>
+                <p class="text-xs text-slate-500 font-medium truncate mb-1.5">${escapeHtml(m.role || 'Equipo Quito')}</p>
+                <div class="text-[11px] font-semibold text-slate-600 flex items-center gap-1.5">
+                  <span>🕒 ${m.since || '08:30'} ~</span>
+                  ${m.status === 'outing' && m.returnTime ? `<span class="px-1.5 py-0.5 rounded-md bg-sky-100 text-sky-800 font-bold">복귀 ${m.returnTime}</span>` : ''}
+                </div>
+                ${m.status === 'outing' && m.reason ? `
+                  <div class="mt-1 text-xs font-bold text-sky-800 bg-sky-100/80 px-2 py-0.5 rounded-lg truncate">
+                    📍 ${escapeHtml(m.reason)}
+                  </div>
+                ` : ''}
+                ${m.bubble ? `
+                  <div class="mt-1.5 inline-block max-w-full bg-white/95 border border-slate-200/80 rounded-xl px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-2xs truncate">
+                    💬 ${escapeHtml(m.bubble)}
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+
+            <!-- Accumulated Time Summary Bar -->
+            <div onclick="openStatusModal('${m.id}')" class="cursor-pointer bg-white/80 rounded-2xl p-2.5 border border-slate-200/70 space-y-1.5">
+              <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] font-bold text-slate-600">
+                <span class="text-emerald-700">💼 ${formatDuration(totals.working)}</span>
+                <span class="text-amber-700">☕ ${formatDuration(totals.break)}</span>
+                <span class="text-orange-700">🍱 ${formatDuration(totals.meal)}</span>
+                <span class="text-rose-700">🍳 ${formatDuration(totals.cooking)}</span>
+                <span class="text-sky-700">🚗 ${formatDuration(totals.outing)}</span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-slate-200/80 overflow-hidden flex">
+                ${totals.working > 0 ? `<div style="width:${pct(totals.working)}%" class="bg-emerald-500 h-full"></div>` : ''}
+                ${totals.break > 0 ? `<div style="width:${pct(totals.break)}%" class="bg-amber-400 h-full"></div>` : ''}
+                ${totals.meal > 0 ? `<div style="width:${pct(totals.meal)}%" class="bg-orange-400 h-full"></div>` : ''}
+                ${totals.cooking > 0 ? `<div style="width:${pct(totals.cooking)}%" class="bg-rose-400 h-full"></div>` : ''}
+                ${totals.outing > 0 ? `<div style="width:${pct(totals.outing)}%" class="bg-sky-500 h-full"></div>` : ''}
+                ${totals.meeting > 0 ? `<div style="width:${pct(totals.meeting)}%" class="bg-violet-500 h-full"></div>` : ''}
+              </div>
+            </div>
+
+            <!-- Quick Action Footer -->
+            <div class="mt-2.5 flex items-center gap-2">
+              ${m.status !== 'working' ? `
+                <button onclick="quickBackToOffice('${m.id}')" class="flex-1 py-1.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-2xs transition">
+                  🏢 ${t('사무실 복귀!', 'Volver a oficina')}
+                </button>
+              ` : `
+                <button onclick="openStatusModal('${m.id}')" class="flex-1 py-1.5 px-3 rounded-xl bg-white hover:bg-amber-100/70 text-slate-700 border border-slate-200 text-xs font-bold transition">
+                  ✨ ${t('상태 변경', 'Cambiar estado')}
+                </button>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function petAvatar(el) {
+      el.classList.remove('anim-squish');
+      void el.offsetWidth;
+      el.classList.add('anim-squish');
+      const heart = document.createElement('span');
+      heart.className = 'heart-pop';
+      const icons = ['💕', '✨', '💖', '🦙', '🌟'];
+      heart.textContent = icons[Math.floor(Math.random() * icons.length)];
+      el.appendChild(heart);
+      setTimeout(() => heart.remove(), 900);
+    }
+
+    function renderActivityFeed() {
+      const feed = document.getElementById('activityFeed');
+      document.getElementById('feedCount').textContent = activityLogs.length;
+      if (activityLogs.length === 0) {
+        feed.innerHTML = `<p class="text-slate-400 py-4 text-center">${t('아직 오늘 기록된 이동 내역이 없습니다.', 'Aún no hay movimientos registrados hoy.')}</p>`;
+        return;
+      }
+      feed.innerHTML = activityLogs.slice(0, 30).map(log => `
+        <div class="flex items-center justify-between gap-2 bg-slate-50 px-3 py-2 rounded-xl border border-slate-100">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="font-mono text-[11px] font-bold text-slate-400 shrink-0">${log.time}</span>
+            <span class="font-bold text-slate-800 shrink-0">${escapeHtml(log.name)}</span>
+            <span class="text-slate-600 truncate">→ ${escapeHtml(log.detail)}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Status Modal Logic
+    function openStatusModal(memberId) {
+      const m = members.find(x => x.id === memberId);
+      if (!m) return;
+      selectedMemberId = memberId;
+      selectedStatusInModal = m.status || 'working';
+
+      const th = THEMES[m.theme] || THEMES.amber;
+      const prev = document.getElementById('modalAvatarPreview');
+      prev.className = `w-16 h-16 rounded-2xl flex items-center justify-center border border-slate-200 p-1.5 ${th.avatarBg}`;
+      prev.innerHTML = renderAvatarSVG(m.avatar, selectedStatusInModal, m.accessory);
+
+      document.getElementById('modalMemberName').textContent = m.name;
+      document.getElementById('modalMemberRole').textContent = m.role || '';
+
+      const totals = getLiveTotals(m);
+      document.getElementById('modalMemberTimers').innerHTML = `
+        <span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700">💼 근무 ${formatDuration(totals.working)}</span>
+        <span class="px-2 py-0.5 rounded-md bg-amber-50 text-amber-700">☕ 휴식 ${formatDuration(totals.break)}</span>
+        <span class="px-2 py-0.5 rounded-md bg-orange-50 text-orange-700">🍱 식사 ${formatDuration(totals.meal)}</span>
+        <span class="px-2 py-0.5 rounded-md bg-rose-50 text-rose-700">🍳 요리 ${formatDuration(totals.cooking)}</span>
+        <span class="px-2 py-0.5 rounded-md bg-sky-50 text-sky-700">🚗 외출 ${formatDuration(totals.outing)}</span>
+      `;
+
+      document.getElementById('inputReason').value = m.reason || '';
+      document.getElementById('inputReturnTime').value = m.returnTime || '';
+      document.getElementById('inputBubble').value = m.bubble || '';
+      document.getElementById('inputVerifyPin').value = '';
+      document.getElementById('pinVerifyBox').classList.toggle('hidden', !m.pin);
+
+      renderModalStatusGrid();
+      renderReasonChips();
+      renderBubbleChips();
+      toggleOutingBox();
+      openModal('statusModal');
+    }
+
+    function renderModalStatusGrid() {
+      const grid = document.getElementById('statusButtonsGrid');
+      grid.innerHTML = Object.entries(STATUSES).map(([key, st]) => {
+        const selected = selectedStatusInModal === key;
+        return `
+          <button type="button" onclick="selectStatusInModal('${key}')" class="p-2.5 rounded-2xl border-2 text-left transition flex items-center gap-2 ${selected ? 'border-amber-400 bg-amber-50 shadow-xs' : 'border-slate-200 bg-white hover:bg-slate-50'}">
+            <span class="text-lg">${st.emoji}</span>
+            <div class="min-w-0">
+              <div class="text-xs font-bold text-slate-800 truncate">${st.ko}</div>
+              <div class="text-[10px] font-semibold text-slate-500 truncate">${st.es}</div>
+            </div>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function selectStatusInModal(statusKey) {
+      selectedStatusInModal = statusKey;
+      const m = members.find(x => x.id === selectedMemberId);
+      if (m) {
+        document.getElementById('modalAvatarPreview').innerHTML = renderAvatarSVG(m.avatar, statusKey, m.accessory);
+      }
+      renderModalStatusGrid();
+      toggleOutingBox();
+    }
+
+    function toggleOutingBox() {
+      document.getElementById('outingFields').classList.toggle('hidden', selectedStatusInModal !== 'outing');
+    }
+
+    function renderReasonChips() {
+      document.getElementById('reasonChips').innerHTML = OUTING_REASONS.map(r => `
+        <button type="button" onclick="document.getElementById('inputReason').value='${r.es}'" class="px-2.5 py-1 rounded-full bg-white hover:bg-sky-100 border border-sky-200 text-[11px] font-bold text-sky-800 transition">
+          ${t(r.ko, r.es)}
+        </button>
+      `).join('');
+    }
+
+    function renderBubbleChips() {
+      document.getElementById('bubbleChips').innerHTML = BUBBLE_PRESETS.map(b => `
+        <button type="button" onclick="document.getElementById('inputBubble').value='${b.es}'" class="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-amber-100 text-[11px] font-semibold text-slate-700 transition">
+          ${t(b.ko, b.es)}
+        </button>
+      `).join('');
+    }
+
+    function saveStatusChange() {
+      const m = members.find(x => x.id === selectedMemberId);
+      if (!m) return;
+      if (m.pin && document.getElementById('inputVerifyPin').value.trim() !== String(m.pin)) {
+        showToast('🔒 PIN 번호가 일치하지 않습니다 · PIN incorrecto');
+        return;
+      }
+
+      commitElapsedTime(m);
+      const qNow = getQuitoNow();
+      m.status = selectedStatusInModal;
+      m.since = qNow.short;
+      m.reason = selectedStatusInModal === 'outing' ? document.getElementById('inputReason').value.trim() : '';
+      m.returnTime = selectedStatusInModal === 'outing' ? document.getElementById('inputReturnTime').value : '';
+      m.bubble = document.getElementById('inputBubble').value.trim();
+
+      const st = STATUSES[m.status];
+      const detail = `${st.emoji} ${st.es}${m.reason ? ' (' + m.reason + ')' : ''}`;
+      pushLog(m, 'STATUS_CHANGE', detail);
+      persistAndSync(m, 'STATUS_CHANGE');
+      closeModal('statusModal');
+      renderAll();
+      showToast(`✅ ${m.name}: ${t(st.ko, st.es)}`);
+    }
+
+    function quickBackToOffice(memberId) {
+      const m = members.find(x => x.id === memberId);
+      if (!m) return;
+      if (m.pin) {
+        openStatusModal(memberId);
+        return;
+      }
+      commitElapsedTime(m);
+      const qNow = getQuitoNow();
+      m.status = 'working';
+      m.since = qNow.short;
+      m.reason = '';
+      m.returnTime = '';
+      pushLog(m, 'RETURN_OFFICE', '💻 Trabajando (Regreso a oficina)');
+      persistAndSync(m, 'RETURN_OFFICE');
+      renderAll();
+      showToast(`🏢 ${m.name} ${t('사무실 복귀 완료!', 'regresó a la oficina')}`);
+    }
+
+    function bulkStatus(newStatus) {
+      const qNow = getQuitoNow();
+      members.forEach(m => {
+        commitElapsedTime(m);
+        m.status = newStatus;
+        m.since = qNow.short;
+        m.reason = '';
+        m.returnTime = '';
+      });
+      pushLog({ id: 'ALL', name: 'Todo el equipo' }, 'BULK_UPDATE', `${STATUSES[newStatus].emoji} ${STATUSES[newStatus].es}`);
+      saveLocal();
+      syncAllToSheets();
+      renderAll();
+      showToast(`${STATUSES[newStatus].emoji} ${t('전체 팀원 상태 일괄 변경 완료!', 'Estado actualizado para todos')}`);
+    }
+
+    function resetAllTimers() {
+      members.forEach(m => {
+        m.totals = { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 };
+        m.updatedAt = Date.now();
+      });
+      saveLocal();
+      syncAllToSheets();
+      renderAll();
+      showToast(`⏱️ ${t('누적 시간이 초기화되었습니다.', 'Tiempos reiniciados.')}`);
+    }
+
+    // Avatar & Profile Studio
+    function openAvatarStudioFromStatus() {
+      closeModal('statusModal');
+      openAvatarStudio(selectedMemberId);
+    }
+
+    function openAddMemberModal() {
+      studioMode = 'add';
+      selectedMemberId = null;
+      studioDraft = { avatar: 'alpaca', accessory: 'none', theme: 'amber' };
+      document.getElementById('studioTitle').textContent = '➕ 새 팀원 추가 · Nuevo integrante';
+      document.getElementById('studioName').value = '';
+      document.getElementById('studioRole').value = 'Equipo Quito';
+      document.getElementById('studioPin').value = '';
+      document.getElementById('btnDeleteMember').classList.add('hidden');
+      renderStudioPickers();
+      openModal('avatarModal');
+    }
+
+    function openAvatarStudio(memberId) {
+      const m = members.find(x => x.id === memberId);
+      if (!m) return;
+      studioMode = 'edit';
+      selectedMemberId = memberId;
+      studioDraft = { avatar: m.avatar || 'alpaca', accessory: m.accessory || 'none', theme: m.theme || 'amber' };
+      document.getElementById('studioTitle').textContent = '🎨 아바타 & 프로필 스튜디오';
+      document.getElementById('studioName').value = m.name;
+      document.getElementById('studioRole').value = m.role || '';
+      document.getElementById('studioPin').value = m.pin || '';
+      document.getElementById('btnDeleteMember').classList.remove('hidden');
+      renderStudioPickers();
+      openModal('avatarModal');
+    }
+
+    function renderStudioPickers() {
+      const th = THEMES[studioDraft.theme] || THEMES.amber;
+      const box = document.getElementById('studioPreviewBox');
+      box.className = `w-24 h-24 rounded-3xl flex items-center justify-center shadow-sm border-2 border-white shrink-0 p-2 ${th.avatarBg}`;
+      box.innerHTML = renderAvatarSVG(studioDraft.avatar, 'working', studioDraft.accessory);
+
+      document.getElementById('avatarPickerGrid').innerHTML = AVATARS.map(av => `
+        <button type="button" onclick="studioDraft.avatar='${av.id}'; renderStudioPickers()" class="p-2 rounded-2xl border-2 flex flex-col items-center gap-1 transition ${studioDraft.avatar === av.id ? 'border-violet-500 bg-violet-50' : 'border-slate-200 hover:bg-slate-50'}">
+          <div class="w-12 h-12">${renderAvatarSVG(av.id, 'working', 'none')}</div>
+          <span class="text-[10px] font-bold text-slate-700 truncate w-full text-center">${av.label}</span>
+        </button>
+      `).join('');
+
+      document.getElementById('accessoryPickerGrid').innerHTML = ACCESSORIES.map(ac => `
+        <button type="button" onclick="studioDraft.accessory='${ac.id}'; renderStudioPickers()" class="px-3 py-1.5 rounded-full border-2 text-xs font-bold transition ${studioDraft.accessory === ac.id ? 'border-violet-500 bg-violet-50 text-violet-800' : 'border-slate-200 text-slate-600'}">
+          ${ac.icon} ${ac.label}
+        </button>
+      `).join('');
+
+      document.getElementById('themePickerGrid').innerHTML = Object.entries(THEMES).map(([k, val]) => `
+        <button type="button" onclick="studioDraft.theme='${k}'; renderStudioPickers()" class="px-3 py-1.5 rounded-xl border-2 text-xs font-bold transition ${val.card} ${studioDraft.theme === k ? 'ring-2 ring-violet-500' : ''}">
+          ${val.name}
+        </button>
+      `).join('');
+    }
+
+    function saveAvatarStudio() {
+      const name = document.getElementById('studioName').value.trim();
+      if (!name) {
+        showToast('⚠️ 이름을 입력해 주세요 · Ingresa un nombre');
+        return;
+      }
+      const role = document.getElementById('studioRole').value.trim();
+      const pin = document.getElementById('studioPin').value.trim();
+      const qNow = getQuitoNow();
+
+      if (studioMode === 'add') {
+        const newMember = {
+          id: 'm' + Date.now(),
+          name,
+          role: role || 'Equipo Quito',
+          avatar: studioDraft.avatar,
+          accessory: studioDraft.accessory,
+          theme: studioDraft.theme,
+          status: 'working',
+          reason: '',
+          returnTime: '',
+          bubble: '¡Hola equipo! 👋',
+          since: qNow.short,
+          updatedAt: Date.now(),
+          pin,
+          totals: { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 }
+        };
+        members.push(newMember);
+        pushLog(newMember, 'ADD_MEMBER', 'Nuevo integrante agregado');
+        persistAndSync(newMember, 'ADD_MEMBER');
+      } else {
+        const m = members.find(x => x.id === selectedMemberId);
+        if (m) {
+          m.name = name;
+          m.role = role;
+          m.avatar = studioDraft.avatar;
+          m.accessory = studioDraft.accessory;
+          m.theme = studioDraft.theme;
+          m.pin = pin;
+          pushLog(m, 'UPDATE_AVATAR', `Avatar: ${studioDraft.avatar}`);
+          persistAndSync(m, 'UPDATE_AVATAR');
+        }
+      }
+      closeModal('avatarModal');
+      renderAll();
+      showToast('🎨 프로필이 저장되었습니다 · Guardado');
+    }
+
+    function deleteCurrentMember() {
+      if (!selectedMemberId) return;
+      const idx = members.findIndex(x => x.id === selectedMemberId);
+      if (idx > -1) {
+        const removed = members.splice(idx, 1)[0];
+        saveLocal();
+        if (gasUrl) {
+          fetch(gasUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify({ action: 'deleteMember', id: removed.id })
+          }).catch(() => {});
+        }
+        closeModal('avatarModal');
+        renderAll();
+        showToast(`🗑️ ${removed.name} 삭제됨`);
+      }
+    }
+
+    // Google Sheets Bidirectional Sync
+    function saveLocal() {
+      localStorage.setItem('quito_members_v3', JSON.stringify(members));
+      localStorage.setItem('quito_logs_v3', JSON.stringify(activityLogs));
+    }
+
+    function pushLog(m, actionType, detail) {
+      const qNow = getQuitoNow();
+      activityLogs.unshift({
+        time: qNow.short,
+        date: qNow.date,
+        id: m.id,
+        name: m.name,
+        action: actionType,
+        detail
+      });
+      if (activityLogs.length > 60) activityLogs.length = 60;
+    }
+
+    async function persistAndSync(member, actionType) {
+      saveLocal();
+      if (!gasUrl) return;
+      const qNow = getQuitoNow();
+      setSyncBadge('syncing');
+      try {
+        await fetch(gasUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          body: JSON.stringify({
+            action: 'updateMember',
+            member: serializeMemberForSheet(member),
+            log: {
+              timestamp_quito: `${qNow.date} ${qNow.time}`,
+              date_quito: qNow.date,
+              member_id: member.id,
+              member_name: member.name,
+              action_type: actionType,
+              status: member.status,
+              reason: member.reason || '',
+              returnTime: member.returnTime || '',
+              bubble: member.bubble || '',
+              avatar_config: `${member.avatar}/${member.accessory}/${member.theme}`
+            }
+          })
+        });
+        setSyncBadge('ok');
+      } catch (e) {
+        setSyncBadge('err');
+      }
+    }
+
+    async function syncAllToSheets() {
+      if (!gasUrl) return;
+      setSyncBadge('syncing');
+      try {
+        await fetch(gasUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          body: JSON.stringify({
+            action: 'syncAll',
+            members: members.map(serializeMemberForSheet)
+          })
+        });
+        setSyncBadge('ok');
+      } catch (e) {
+        setSyncBadge('err');
+      }
+    }
+
+    function serializeMemberForSheet(m) {
+      return {
+        id: m.id,
+        name: m.name,
+        role: m.role || '',
+        avatar: m.avatar || 'alpaca',
+        accessory: m.accessory || 'none',
+        theme: m.theme || 'amber',
+        status: m.status || 'working',
+        reason: m.reason || '',
+        returnTime: m.returnTime || '',
+        bubble: m.bubble || '',
+        since: m.since || '08:30',
+        updatedAt: m.updatedAt || Date.now(),
+        pin: m.pin || ''
+      };
+    }
+
+    async function manualSync() {
+      if (!gasUrl) return;
+      setSyncBadge('syncing');
+      try {
+        const res = await fetch(`${gasUrl}?t=${Date.now()}`);
+        const json = await res.json();
+        if (json && json.ok && Array.isArray(json.members) && json.members.length > 0) {
+          const oldMap = Object.fromEntries(members.map(m => [m.id, m]));
+          members = json.members.map(row => {
+            const prev = oldMap[row.id] || {};
+            return {
+              ...prev,
+              ...row,
+              updatedAt: Number(row.updatedAt) || prev.updatedAt || Date.now(),
+              totals: prev.totals || { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 }
+            };
+          });
+          saveLocal();
+          renderAll();
+        }
+        setSyncBadge('ok');
+      } catch (e) {
+        setSyncBadge('err');
+      }
+    }
+
+    function setSyncBadge(state) {
+      const badge = document.getElementById('syncBadge');
+      const txt = document.getElementById('syncText');
+      if (state === 'ok') {
+        badge.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200';
+        txt.textContent = 'Google Sheets · En vivo';
+      } else if (state === 'syncing') {
+        badge.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-100 text-sky-800 border border-sky-200';
+        txt.textContent = 'Sincronizando...';
+      } else {
+        badge.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200';
+        txt.textContent = 'Modo Local';
+      }
+    }
+
+    function saveGasUrl() {
+      const val = document.getElementById('gasUrlInput').value.trim();
+      if (val) {
+        gasUrl = val;
+        localStorage.setItem('quito_gas_url', val);
+        closeModal('sheetsModal');
+        manualSync();
+        showToast('✅ Google Sheets URL 업데이트 완료');
+      }
+    }
+
+    function copyWhatsAppReport() {
+      const qNow = getQuitoNow();
+      const lines = [
+        `🇪🇨 *Estado Oficina Quito* (${qNow.date} · ${qNow.short})`,
+        `──────────────────`
+      ];
+      members.forEach(m => {
+        const st = STATUSES[m.status] || STATUSES.working;
+        const tot = getLiveTotals(m);
+        let extra = '';
+        if (m.status === 'outing' && m.reason) extra += ` · 📍 ${m.reason}`;
+        if (m.status === 'outing' && m.returnTime) extra += ` (Regreso ${m.returnTime})`;
+        lines.push(`${st.emoji} *${m.name}*: ${st.es}${extra} [💼${formatDuration(tot.working)} / ☕${formatDuration(tot.break)} / 🍱${formatDuration(tot.meal)} / 🍳${formatDuration(tot.cooking)}]`);
+      });
+      navigator.clipboard.writeText(lines.join('\n')).then(() => {
+        showToast('📋 WhatsApp 보고서가 복사되었습니다 · Copiado');
+      });
+    }
+
+    function setLang(lang) {
+      currentLang = lang;
+      localStorage.setItem('quito_lang', lang);
+      ['both', 'ko', 'es'].forEach(l => {
+        const btn = document.getElementById(`lang-${l}`);
+        btn.className = l === lang
+          ? 'px-2.5 py-1 rounded-full bg-amber-400 text-slate-900 shadow-2xs transition'
+          : 'px-2.5 py-1 rounded-full text-slate-600 hover:text-slate-900 transition';
+      });
+      renderAll();
+    }
+
+    function setFilter(f) {
+      currentFilter = f;
+      renderAll();
+    }
+
+    function openModal(id) {
+      if (id === 'sheetsModal') {
+        document.getElementById('gasUrlInput').value = gasUrl;
+      }
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => el.classList.add('hidden'), 2600);
+    }
+
+    function escapeHtml(str) {
+      return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s]));
+    }
+
+    function updateClock() {
+      const q = getQuitoNow();
+      document.getElementById('quitoClock').textContent = `Quito, Ecuador (UTC-5) · ${q.date} · ${q.time}`;
+    }
+
+    function renderAll() {
+      renderFilterBar();
+      renderGrid();
+      renderActivityFeed();
+    }
+
+    // Init
+    setLang(currentLang);
+    updateClock();
+    setInterval(updateClock, 1000);
+    setInterval(renderGrid, 15000); // Live timer refresh
+    manualSync();
+    setInterval(manualSync, 12000); // Google Sheets polling every 12s
+  </script>
+</body>
+</html>
