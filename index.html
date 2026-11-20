@@ -76,7 +76,7 @@
               <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
               <span id="syncText">Conectando...</span>
             </span>
-            <button onclick="manualSync()" title="Sincronizar ahora" class="p-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs transition">🔄</button>
+            <button type="button" onclick="manualSync(true)" title="Sincronizar ahora" class="p-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs transition">🔄</button>
           </div>
           <p class="text-xs text-slate-500 font-medium" id="quitoClock">Quito, Ecuador · Cargando...</p>
         </div>
@@ -85,26 +85,26 @@
       <!-- Controls -->
       <div class="flex flex-wrap items-center gap-2">
         <div class="inline-flex rounded-full bg-slate-100 p-1 border border-slate-200 text-xs font-bold">
-          <button onclick="setLang('both')" id="lang-both" class="px-2.5 py-1 rounded-full transition">🌐 ES/KO</button>
-          <button onclick="setLang('ko')" id="lang-ko" class="px-2.5 py-1 rounded-full transition">🇰🇷 KO</button>
-          <button onclick="setLang('es')" id="lang-es" class="px-2.5 py-1 rounded-full transition">🇪🇨 ES</button>
+          <button type="button" onclick="setLang('both')" id="lang-both" class="px-2.5 py-1 rounded-full transition">🌐 ES/KO</button>
+          <button type="button" onclick="setLang('ko')" id="lang-ko" class="px-2.5 py-1 rounded-full transition">🇰🇷 KO</button>
+          <button type="button" onclick="setLang('es')" id="lang-es" class="px-2.5 py-1 rounded-full transition">🇪🇨 ES</button>
         </div>
 
-        <button onclick="openModal('sheetsModal')" class="px-3 py-1.5 rounded-full bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold flex items-center gap-1.5 transition">
+        <button type="button" onclick="openModal('sheetsModal')" class="px-3 py-1.5 rounded-full bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold flex items-center gap-1.5 transition">
           ⚙️ Google Sheets
         </button>
 
         <div class="inline-flex rounded-full bg-slate-100 p-1 border border-slate-200 text-xs font-bold gap-1">
-          <button onclick="bulkStatus('working')" class="px-2.5 py-1 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition">☀️ 전원 출근</button>
-          <button onclick="bulkStatus('off')" class="px-2.5 py-1 rounded-full bg-slate-200/70 hover:bg-slate-300/70 text-slate-700 transition">🌙 전원 퇴근</button>
-          <button onclick="resetAllTimers()" class="px-2.5 py-1 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 transition">⏱️ 시간 초기화</button>
+          <button type="button" onclick="bulkStatus('working')" class="px-2.5 py-1 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition">☀️ 전원 출근</button>
+          <button type="button" onclick="bulkStatus('off')" class="px-2.5 py-1 rounded-full bg-slate-200/70 hover:bg-slate-300/70 text-slate-700 transition">🌙 전원 퇴근</button>
+          <button type="button" onclick="resetAllTimers()" class="px-2.5 py-1 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 transition">⏱️ 시간 초기화</button>
         </div>
 
-        <button onclick="openAddMemberModal()" class="px-3.5 py-1.5 rounded-full bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold text-xs shadow-sm transition flex items-center gap-1">
+        <button type="button" onclick="openAddMemberModal()" class="px-3.5 py-1.5 rounded-full bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold text-xs shadow-sm transition flex items-center gap-1">
           ➕ 팀원 추가
         </button>
 
-        <button onclick="copyWhatsAppReport()" class="px-3.5 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-1.5">
+        <button type="button" onclick="copyWhatsAppReport()" class="px-3.5 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-1.5">
           💬 Reporte WhatsApp
         </button>
       </div>
@@ -141,7 +141,7 @@
               <p class="text-[11px] text-slate-500 font-medium">Google Sheets 전체 동기화 · Quito (UTC-5)</p>
             </div>
             <div class="flex items-center gap-1.5">
-              <button onclick="manualSync()" title="피드 새로고침" class="p-1 rounded-full hover:bg-slate-100 text-xs">🔄</button>
+              <button type="button" onclick="manualSync(true)" title="피드 새로고침" class="p-1 rounded-full hover:bg-slate-100 text-xs">🔄</button>
               <span id="feedCount" class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">0</span>
             </div>
           </div>
@@ -153,7 +153,7 @@
   </main>
 
   <!-- Toast -->
-  <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 hidden bg-slate-900 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-lg"></div>
+  <div id="toast" class="fixed top-20 left-1/2 -translate-x-1/2 z-[60] pointer-events-none hidden bg-slate-900 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-lg"></div>
 
   <!-- PIN Gatekeeper Modal -->
   <div id="pinGateModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
@@ -166,15 +166,15 @@
         class="w-40 mx-auto block px-4 py-2.5 rounded-2xl border-2 border-rose-200 focus:border-rose-500 focus:outline-none text-xl font-bold tracking-[0.4em] text-center mb-2">
       <p id="pinGateError" class="text-xs font-bold text-rose-600 h-4 mb-3"></p>
       <div class="flex items-center justify-center gap-2">
-        <button onclick="closeModal('pinGateModal')" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">취소</button>
-        <button onclick="confirmPinGate()" class="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-sm">🔓 잠금 해제</button>
+        <button type="button" onclick="closeModal('pinGateModal')" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">취소</button>
+        <button type="button" onclick="confirmPinGate()" class="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-sm">🔓 잠금 해제</button>
       </div>
     </div>
   </div>
 
   <!-- Status Change Modal -->
   <div id="statusModal" class="fixed inset-0 z-40 hidden bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-amber-100 max-h-[92vh] overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-amber-100 max-h-[92vh] overflow-y-auto relative z-50">
       <div class="flex items-start justify-between gap-3 mb-4">
         <div class="flex items-center gap-3">
           <div id="modalAvatarPreview" class="w-16 h-16 rounded-2xl flex items-center justify-center border border-slate-200 shadow-xs"></div>
@@ -184,7 +184,7 @@
             <div id="modalMemberTimers" class="flex flex-wrap gap-1.5 mt-1.5 text-[11px] font-bold"></div>
           </div>
         </div>
-        <button onclick="closeModal('statusModal')" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold">✕</button>
+        <button type="button" onclick="closeModal('statusModal')" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold">✕</button>
       </div>
 
       <!-- Status Grid -->
@@ -210,13 +210,13 @@
         <input type="text" id="inputBubble" maxlength="40" placeholder="예: 오늘도 파이팅! 💪 / ¡Con toda!" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-amber-400">
       </div>
 
-      <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
-        <button onclick="openAvatarStudioFromStatus()" class="px-3.5 py-2 rounded-xl bg-violet-50 hover:bg-violet-100 text-violet-700 border border-violet-200 text-xs font-bold transition">
+      <div class="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100">
+        <button type="button" onclick="openAvatarStudioFromStatus()" class="px-3.5 py-2.5 rounded-xl bg-violet-50 hover:bg-violet-100 text-violet-700 border border-violet-200 text-xs font-bold transition cursor-pointer">
           🎨 캐릭터·프로필 꾸미기
         </button>
         <div class="flex items-center gap-2">
-          <button onclick="closeModal('statusModal')" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">취소</button>
-          <button onclick="saveStatusChange()" class="px-5 py-2 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-900 text-xs font-bold shadow-sm">✅ 저장하기 · Guardar</button>
+          <button type="button" onclick="closeModal('statusModal')" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold cursor-pointer">취소</button>
+          <button type="button" id="btnSaveStatus" onclick="saveStatusChange()" class="px-6 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-500 active:scale-95 text-slate-900 text-xs font-bold shadow-sm cursor-pointer">✅ 저장하기 · Guardar</button>
         </div>
       </div>
     </div>
@@ -224,10 +224,10 @@
 
   <!-- Avatar & Profile Studio Modal -->
   <div id="avatarModal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl border border-violet-100 max-h-[92vh] overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl border border-violet-100 max-h-[92vh] overflow-y-auto relative z-50">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-bold text-slate-800" id="studioTitle">🎨 아바타 & 프로필 스튜디오</h3>
-        <button onclick="closeModal('avatarModal')" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold">✕</button>
+        <button type="button" onclick="closeModal('avatarModal')" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold">✕</button>
       </div>
 
       <div class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200/80 mb-4">
@@ -258,10 +258,10 @@
       </div>
 
       <div class="flex items-center justify-between pt-3 border-t border-slate-100">
-        <button id="btnDeleteMember" onclick="deleteCurrentMember()" class="px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold hidden">🗑️ 팀원 삭제</button>
+        <button type="button" id="btnDeleteMember" onclick="deleteCurrentMember()" class="px-3 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold hidden cursor-pointer">🗑️ 팀원 삭제</button>
         <div class="flex items-center gap-2 ml-auto">
-          <button onclick="closeModal('avatarModal')" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">취소</button>
-          <button onclick="saveAvatarStudio()" class="px-5 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold shadow-sm">💾 저장하기 · Guardar</button>
+          <button type="button" onclick="closeModal('avatarModal')" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold cursor-pointer">취소</button>
+          <button type="button" onclick="saveAvatarStudio()" class="px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 active:scale-95 text-white text-xs font-bold shadow-sm cursor-pointer">💾 저장하기 · Guardar</button>
         </div>
       </div>
     </div>
@@ -272,15 +272,15 @@
     <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-sky-100">
       <div class="flex items-center justify-between mb-3">
         <h3 class="text-lg font-bold text-slate-800">⚙️ Google Sheets 실시간 연동 설정</h3>
-        <button onclick="closeModal('sheetsModal')" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold">✕</button>
+        <button type="button" onclick="closeModal('sheetsModal')" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold">✕</button>
       </div>
       <p class="text-xs text-slate-600 mb-3 leading-relaxed">
         이미 키토 오피스 전용 Google Apps Script 주소가 내장되어 있어 자동으로 동기화됩니다. 다른 시트로 변경할 때만 아래 주소를 수정해 주세요.
       </p>
       <input type="text" id="gasUrlInput" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono mb-4 bg-slate-50">
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <button onclick="clearLocalCache()" class="px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold">🧹 로컬 캐시 비우기</button>
-        <button onclick="saveGasUrl()" class="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold">✅ 연결 및 동기화</button>
+        <button type="button" onclick="clearLocalCache()" class="px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold">🧹 로컬 캐시 비우기</button>
+        <button type="button" onclick="saveGasUrl()" class="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold">✅ 연결 및 동기화</button>
       </div>
     </div>
   </div>
@@ -299,6 +299,7 @@
 
     const unlockedMembers = new Set();
     let pendingGateAction = null;
+    let isSyncingNow = false;
 
     const STATUSES = {
       working:  { ko: '열일 중', es: 'Trabajando', emoji: '💻', badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
@@ -365,8 +366,8 @@
       { ko: '금방 돌아옵니다 🏃', es: 'Vuelvo enseguida 🏃' }
     ];
 
-    let members = JSON.parse(localStorage.getItem('quito_members_v4') || '[]');
-    let activityLogs = JSON.parse(localStorage.getItem('quito_logs_v4') || '[]');
+    let members = JSON.parse(localStorage.getItem('quito_members_v5') || '[]');
+    let activityLogs = JSON.parse(localStorage.getItem('quito_logs_v5') || '[]');
 
     function getQuitoNow() {
       const now = new Date();
@@ -379,7 +380,10 @@
       const fmtDate = new Intl.DateTimeFormat('es-EC', {
         timeZone: 'America/Guayaquil', weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit'
       }).format(now);
-      return { time: fmtTime, short: fmtShort, date: fmtDate, ms: now.getTime() };
+      const fmtDayKey = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'America/Guayaquil', year: 'numeric', month: '2-digit', day: '2-digit'
+      }).format(now); // YYYY-MM-DD in Quito
+      return { time: fmtTime, short: fmtShort, date: fmtDate, dayKey: fmtDayKey, ms: now.getTime() };
     }
 
     function formatCleanTime(val) {
@@ -429,9 +433,44 @@
       return `${m}m`;
     }
 
+    function emptyTotals() {
+      return { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0, dayKey: getQuitoNow().dayKey };
+    }
+
+    function parseTotalsFromSheet(rawJson, fallbackTotals) {
+      const todayKey = getQuitoNow().dayKey;
+      let parsed = null;
+      if (rawJson) {
+        try {
+          parsed = typeof rawJson === 'string' ? JSON.parse(rawJson) : rawJson;
+        } catch (e) {
+          parsed = null;
+        }
+      }
+      const candidate = parsed || fallbackTotals || emptyTotals();
+      // Preserve totals throughout the same Quito day even after going 'off' and returning!
+      if (candidate.dayKey && candidate.dayKey !== todayKey) {
+        return emptyTotals();
+      }
+      return {
+        working: Number(candidate.working) || 0,
+        break: Number(candidate.break) || 0,
+        meal: Number(candidate.meal) || 0,
+        cooking: Number(candidate.cooking) || 0,
+        outing: Number(candidate.outing) || 0,
+        meeting: Number(candidate.meeting) || 0,
+        dayKey: todayKey
+      };
+    }
+
     function getLiveTotals(m) {
-      const base = { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0, ...(m.totals || {}) };
+      const todayKey = getQuitoNow().dayKey;
+      if (m.totals && m.totals.dayKey && m.totals.dayKey !== todayKey) {
+        m.totals = emptyTotals();
+      }
+      const base = { ...emptyTotals(), ...(m.totals || {}) };
       const ts = Number(m.updatedAt);
+      // Only accumulate live active seconds while NOT 'off' (when 'off', previous totals remain frozen & intact!)
       if (m.status && m.status !== 'off' && !isNaN(ts) && ts > 0) {
         const elapsedSec = Math.max(0, (Date.now() - ts) / 1000);
         if (base[m.status] !== undefined && elapsedSec < 86400) {
@@ -442,15 +481,27 @@
     }
 
     function commitElapsedTime(m) {
-      if (!m.totals) m.totals = { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 };
+      const todayKey = getQuitoNow().dayKey;
+      if (!m.totals || (m.totals.dayKey && m.totals.dayKey !== todayKey)) {
+        m.totals = emptyTotals();
+      }
+      m.totals.dayKey = todayKey;
       const ts = Number(m.updatedAt);
+      // Save accumulated seconds from the previous active status before switching (if previous was 'off', nothing is erased!)
       if (m.status && m.status !== 'off' && !isNaN(ts) && ts > 0) {
         const elapsedSec = Math.max(0, (Date.now() - ts) / 1000);
         if (m.totals[m.status] !== undefined && elapsedSec < 86400) {
-          m.totals[m.status] += elapsedSec;
+          m.totals[m.status] = Math.round((Number(m.totals[m.status]) || 0) + elapsedSec);
         }
       }
       m.updatedAt = Date.now();
+    }
+
+    function isAnyModalOpen() {
+      return ['statusModal', 'avatarModal', 'pinGateModal', 'sheetsModal'].some(id => {
+        const el = document.getElementById(id);
+        return el && !el.classList.contains('hidden');
+      });
     }
 
     function requireAuthAndRun(memberId, actionType) {
@@ -697,14 +748,14 @@
       Object.keys(STATUSES).forEach(k => counts[k] = members.filter(m => m.status === k).length);
 
       let html = `
-        <button onclick="setFilter('all')" class="px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border transition ${currentFilter === 'all' ? 'bg-slate-800 text-white border-slate-800 shadow-xs' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}">
+        <button type="button" onclick="setFilter('all')" class="px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border transition ${currentFilter === 'all' ? 'bg-slate-800 text-white border-slate-800 shadow-xs' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}">
           🌈 ${t('전체', 'Todo')} (${counts.all})
         </button>
       `;
       Object.entries(STATUSES).forEach(([key, st]) => {
         const active = currentFilter === key;
         html += `
-          <button onclick="setFilter('${key}')" class="px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border transition ${active ? 'bg-amber-400 text-slate-900 border-amber-500 shadow-xs' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}">
+          <button type="button" onclick="setFilter('${key}')" class="px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border transition ${active ? 'bg-amber-400 text-slate-900 border-amber-500 shadow-xs' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}">
             ${st.emoji} ${t(st.ko, st.es)} (${counts[key]})
           </button>
         `;
@@ -724,7 +775,7 @@
             <div class="text-4xl">🦙✨</div>
             <h3 class="text-base font-bold text-slate-800">${t('등록된 팀원이 없습니다 · No hay integrantes aún', 'No hay integrantes aún')}</h3>
             <p class="text-xs text-slate-500">${t('상단의 [➕ 팀원 추가] 버튼을 눌러 팀원을 등록하고 캐릭터를 꾸며보세요!', 'Haz clic en [➕ 팀원 추가] para agregar al equipo.')}</p>
-            <button onclick="openAddMemberModal()" class="px-4 py-2 rounded-full bg-amber-400 hover:bg-amber-500 text-slate-900 text-xs font-bold shadow-xs">
+            <button type="button" onclick="openAddMemberModal()" class="px-4 py-2 rounded-full bg-amber-400 hover:bg-amber-500 text-slate-900 text-xs font-bold shadow-xs">
               ➕ 첫 팀원 등록하기 · Agregar integrante
             </button>
           </div>
@@ -753,7 +804,7 @@
               </span>
               <div class="flex items-center gap-1">
                 ${hasPin ? `<span title="${isUnlocked ? '인증됨' : 'PIN 잠금'}" class="text-xs px-2 py-0.5 rounded-full bg-white/90 border border-slate-200/80 ${isUnlocked ? 'text-emerald-600' : 'text-rose-600'} font-bold">${isUnlocked ? '🔓' : '🔒'}</span>` : ''}
-                <button onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'studio')" title="캐릭터·프로필 꾸미기" class="w-8 h-8 rounded-full bg-white/90 hover:bg-violet-100 text-slate-700 border border-slate-200/80 flex items-center justify-center text-sm shadow-2xs transition">
+                <button type="button" onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'studio')" title="캐릭터·프로필 꾸미기" class="w-8 h-8 rounded-full bg-white/90 hover:bg-violet-100 text-slate-700 border border-slate-200/80 flex items-center justify-center text-sm shadow-2xs transition">
                   🎨
                 </button>
               </div>
@@ -806,11 +857,11 @@
 
             <div class="mt-2.5 flex items-center gap-2">
               ${m.status !== 'working' ? `
-                <button onclick="requireAuthAndRun('${m.id}', 'quickReturn')" class="flex-1 py-1.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-2xs transition">
+                <button type="button" onclick="requireAuthAndRun('${m.id}', 'quickReturn')" class="flex-1 py-1.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-2xs transition">
                   🏢 ${t('사무실 복귀!', 'Volver a oficina')}
                 </button>
               ` : `
-                <button onclick="requireAuthAndRun('${m.id}', 'status')" class="flex-1 py-1.5 px-3 rounded-xl bg-white hover:bg-amber-100/70 text-slate-700 border border-slate-200 text-xs font-bold transition">
+                <button type="button" onclick="requireAuthAndRun('${m.id}', 'status')" class="flex-1 py-1.5 px-3 rounded-xl bg-white hover:bg-amber-100/70 text-slate-700 border border-slate-200 text-xs font-bold transition">
                   ${hasPin && !isUnlocked ? '🔒' : '✨'} ${t('상태 변경', 'Cambiar estado')}
                 </button>
               `}
@@ -932,7 +983,10 @@
 
     function saveStatusChange() {
       const m = members.find(x => x.id === selectedMemberId);
-      if (!m) return;
+      if (!m) {
+        closeModal('statusModal');
+        return;
+      }
 
       commitElapsedTime(m);
       const qNow = getQuitoNow();
@@ -945,10 +999,10 @@
       const st = STATUSES[m.status];
       const detail = `${st.emoji} ${st.es}${m.reason ? ' (' + m.reason + ')' : ''}${m.bubble ? ' · "' + m.bubble + '"' : ''}`;
       pushLog(m, 'STATUS_CHANGE', detail);
-      persistAndSync(m, 'STATUS_CHANGE');
       closeModal('statusModal');
       renderAll();
       showToast(`✅ ${m.name}: ${t(st.ko, st.es)}`);
+      persistAndSync(m, 'STATUS_CHANGE');
     }
 
     function quickBackToOfficeDirect(memberId) {
@@ -961,9 +1015,9 @@
       m.reason = '';
       m.returnTime = '';
       pushLog(m, 'RETURN_OFFICE', '🏢 사무실 복귀 · Regreso a oficina');
-      persistAndSync(m, 'RETURN_OFFICE');
       renderAll();
       showToast(`🏢 ${m.name} ${t('사무실 복귀 완료!', 'regresó a la oficina')}`);
+      persistAndSync(m, 'RETURN_OFFICE');
     }
 
     function bulkStatus(newStatus) {
@@ -994,7 +1048,7 @@
 
     function resetAllTimers() {
       members.forEach(m => {
-        m.totals = { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 };
+        m.totals = emptyTotals();
         m.updatedAt = Date.now();
       });
       saveLocal();
@@ -1091,11 +1145,14 @@
           since: qNow.short,
           updatedAt: Date.now(),
           pin,
-          totals: { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 }
+          totals: emptyTotals()
         };
         if (pin) unlockedMembers.add(newId);
         members.push(newMember);
         pushLog(newMember, 'ADD_MEMBER', '➕ 새 팀원 등록 · Nuevo integrante');
+        closeModal('avatarModal');
+        renderAll();
+        showToast('🎨 프로필이 저장되었습니다 · Guardado');
         persistAndSync(newMember, 'ADD_MEMBER');
       } else {
         const m = members.find(x => x.id === selectedMemberId);
@@ -1108,12 +1165,12 @@
           m.pin = pin;
           if (pin) unlockedMembers.add(m.id);
           pushLog(m, 'UPDATE_AVATAR', `🎨 프로필 꾸미기 · ${studioDraft.avatar}`);
+          closeModal('avatarModal');
+          renderAll();
+          showToast('🎨 프로필이 저장되었습니다 · Guardado');
           persistAndSync(m, 'UPDATE_AVATAR');
         }
       }
-      closeModal('avatarModal');
-      renderAll();
-      showToast('🎨 프로필이 저장되었습니다 · Guardado');
     }
 
     function deleteCurrentMember() {
@@ -1136,18 +1193,18 @@
     }
 
     function saveLocal() {
-      localStorage.setItem('quito_members_v4', JSON.stringify(members));
-      localStorage.setItem('quito_logs_v4', JSON.stringify(activityLogs));
+      localStorage.setItem('quito_members_v5', JSON.stringify(members));
+      localStorage.setItem('quito_logs_v5', JSON.stringify(activityLogs));
     }
 
     function clearLocalCache() {
-      localStorage.removeItem('quito_members_v4');
-      localStorage.removeItem('quito_logs_v4');
+      localStorage.removeItem('quito_members_v5');
+      localStorage.removeItem('quito_logs_v5');
       members = [];
       activityLogs = [];
       unlockedMembers.clear();
       closeModal('sheetsModal');
-      manualSync();
+      manualSync(true);
       renderAll();
       showToast('🧹 로컬 캐시 초기화 완료');
     }
@@ -1192,7 +1249,7 @@
           })
         });
         setSyncBadge('ok');
-        setTimeout(manualSync, 1500);
+        setTimeout(() => manualSync(true), 1800);
       } catch (e) {
         setSyncBadge('err');
       }
@@ -1217,6 +1274,7 @@
     }
 
     function serializeMemberForSheet(m) {
+      const todayTotals = parseTotalsFromSheet(null, m.totals);
       return {
         id: m.id,
         name: m.name,
@@ -1230,12 +1288,17 @@
         bubble: m.bubble || '',
         since: formatCleanTime(m.since) || '08:30',
         updatedAt: m.updatedAt || Date.now(),
-        pin: m.pin || ''
+        pin: m.pin || '',
+        totals_json: JSON.stringify(todayTotals)
       };
     }
 
-    async function manualSync() {
-      if (!gasUrl) return;
+    async function manualSync(force = false) {
+      if (!gasUrl || isSyncingNow) return;
+      // Do not overwrite UI while user is actively editing inside a modal unless forced
+      if (!force && isAnyModalOpen()) return;
+
+      isSyncingNow = true;
       setSyncBadge('syncing');
       try {
         const res = await fetch(`${gasUrl}?t=${Date.now()}`);
@@ -1245,6 +1308,7 @@
           members = json.members.map(row => {
             const prev = oldMap[row.id] || {};
             const parsedTs = Number(row.updatedAt);
+            const mergedTotals = parseTotalsFromSheet(row.totals_json, prev.totals);
             return {
               ...prev,
               ...row,
@@ -1252,7 +1316,7 @@
               since: formatCleanTime(row.since) || '08:30',
               returnTime: formatCleanTime(row.returnTime) || '',
               updatedAt: (!isNaN(parsedTs) && parsedTs > 0) ? parsedTs : (prev.updatedAt || Date.now()),
-              totals: prev.totals || { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0 }
+              totals: mergedTotals
             };
           });
           if (Array.isArray(json.logs) && json.logs.length > 0) {
@@ -1266,11 +1330,15 @@
             }));
           }
           saveLocal();
-          renderAll();
+          if (!isAnyModalOpen()) {
+            renderAll();
+          }
         }
         setSyncBadge('ok');
       } catch (e) {
         setSyncBadge('err');
+      } finally {
+        isSyncingNow = false;
       }
     }
 
@@ -1295,7 +1363,7 @@
         gasUrl = val;
         localStorage.setItem('quito_gas_url', val);
         closeModal('sheetsModal');
-        manualSync();
+        manualSync(true);
         showToast('✅ Google Sheets URL 업데이트 완료');
       }
     }
@@ -1373,9 +1441,9 @@
     setLang(currentLang);
     updateClock();
     setInterval(updateClock, 1000);
-    setInterval(renderGrid, 15000);
-    manualSync();
-    setInterval(manualSync, 12000);
+    setInterval(() => { if (!isAnyModalOpen()) renderGrid(); }, 15000);
+    manualSync(true);
+    setInterval(() => manualSync(false), 12000);
   </script>
 </body>
 </html>
