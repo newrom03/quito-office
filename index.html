@@ -130,7 +130,7 @@
       <div class="w-full lg:flex-1 space-y-3.5 min-w-0">
         <div class="bg-white/90 border border-amber-200/80 rounded-2xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 shadow-sm">
           <div class="text-xs sm:text-sm font-semibold text-slate-700">
-            📊 오른쪽 버튼으로 <span class="text-emerald-700 font-bold">[열일·장소]</span>, <span class="text-amber-700 font-bold">[휴식·식사·요리]</span>, <span class="text-sky-700 font-bold">[외출·사유]</span>를 바로 누르거나 <span class="text-rose-600 font-bold">[👉 콕]</span>으로 호출해 보세요!
+            📊 가로 상태 버튼으로 <span class="text-emerald-700 font-bold">[열일·장소]</span>, <span class="text-amber-700 font-bold">[휴식·식사·요리]</span>, <span class="text-sky-700 font-bold">[외출·사유]</span>를 바로 누르거나 <span class="text-rose-600 font-bold">[👉 콕]</span>으로 호출해 보세요!
           </div>
           <div class="text-xs font-bold text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200" id="activeFilterLabel">
             전체 팀원 (0)
@@ -394,7 +394,7 @@
       off:      { ko: '퇴근·출근전', es: 'Fuera', shortKo: '퇴근', emoji: '🌙', badgeBg: 'bg-slate-200 text-slate-700 border-slate-300' }
     };
 
-    const RIGHT_CORE_BUTTONS = ['working', 'break', 'meal', 'cooking', 'outing'];
+    const ROW_STATUS_BUTTONS = ['working', 'break', 'meal', 'cooking', 'outing'];
 
     const WORK_LOCATIONS = [
       { ko: '사무실', es: 'Oficina', emoji: '🏢', val: '사무실 · Oficina' },
@@ -745,15 +745,15 @@
         openLocationPopup(memberId);
       } else if (actionType === 'quickBreak') {
         quickBreakDirect(memberId);
-      } else if (actionType === 'right_working') {
+      } else if (actionType === 'row_working') {
         openLocationPopup(memberId);
-      } else if (actionType === 'right_break') {
+      } else if (actionType === 'row_break') {
         directSetStatus(memberId, 'break');
-      } else if (actionType === 'right_meal') {
+      } else if (actionType === 'row_meal') {
         directSetStatus(memberId, 'meal');
-      } else if (actionType === 'right_cooking') {
+      } else if (actionType === 'row_cooking') {
         directSetStatus(memberId, 'cooking');
-      } else if (actionType === 'right_outing') {
+      } else if (actionType === 'row_outing') {
         openOutingPopup(memberId);
       }
     }
@@ -1180,135 +1180,140 @@
         const overdue = getOverdueState(m);
         const poke = parsePokeInfo(m.poke_info);
         const streak = Number(totals.streak) || 1;
-        const workLocText = m.status === 'working' ? (m.reason || t('사무실', 'Oficina')) : '';
+        const workLocText = m.status === 'working' ? (m.reason || t('사무실 · Oficina', 'Oficina')) : '';
 
         const cardBorderClass = overdue.isOverdue
           ? 'bg-rose-50/80 border-rose-400 border-dashed card-overdue'
           : th.card;
 
-        const rightCoreButtonsHtml = RIGHT_CORE_BUTTONS.map(key => {
+        const horizontalStatusRowHtml = ROW_STATUS_BUTTONS.map(key => {
           const item = STATUSES[key];
           const active = m.status === key;
           return `
             <button type="button"
-              onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'right_${key}')"
-              class="w-full px-1.5 py-1.5 rounded-xl border text-[11px] font-bold flex items-center justify-center gap-1 transition ${
+              onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'row_${key}')"
+              class="flex-1 min-w-0 px-1 py-1 rounded-xl border text-[10px] font-bold flex flex-col items-center justify-center leading-tight transition ${
                 active
                   ? 'bg-slate-800 text-white border-slate-900 shadow-2xs'
                   : 'bg-white/95 hover:bg-amber-100 text-slate-800 border-slate-200/90'
               }">
               <span>${item.emoji}</span>
-              <span>${tShortStatus(item)}</span>
+              <span class="truncate max-w-full">${tShortStatus(item)}</span>
             </button>
           `;
         }).join('');
 
         return `
-          <div class="relative rounded-3xl border-2 ${cardBorderClass} p-3 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group min-w-0">
-            ${poke ? `
-              <div class="mb-2 px-2.5 py-1 rounded-xl bg-amber-300/95 text-slate-900 text-[11px] font-bold flex items-center justify-between gap-1.5 shadow-2xs">
-                <span class="truncate">📣 ${escapeHtml(poke.from)}님이 호출함! (${poke.time})</span>
-                <button type="button" onclick="event.stopPropagation(); clearPokeBanner('${m.id}')" title="호출 배너 지우기" class="w-5 h-5 rounded-full bg-amber-900/15 hover:bg-amber-900/30 text-slate-900 flex items-center justify-center text-xs font-extrabold shrink-0 transition">✕</button>
-              </div>
-            ` : ''}
+          <div class="relative rounded-3xl border-2 ${cardBorderClass} p-3 shadow-sm hover:shadow-md transition-all flex flex-col justify-between gap-2 group min-w-0">
+            <div class="space-y-2 min-w-0">
+              ${poke ? `
+                <div class="px-2.5 py-1 rounded-xl bg-amber-300/95 text-slate-900 text-[11px] font-bold flex items-center justify-between gap-1.5 shadow-2xs">
+                  <span class="truncate">📣 ${escapeHtml(poke.from)}님이 호출함! (${poke.time})</span>
+                  <button type="button" onclick="event.stopPropagation(); clearPokeBanner('${m.id}')" title="호출 배너 지우기" class="w-5 h-5 rounded-full bg-amber-900/15 hover:bg-amber-900/30 text-slate-900 flex items-center justify-center text-xs font-extrabold shrink-0 transition">✕</button>
+                </div>
+              ` : ''}
 
-            ${overdue.isOverdue ? `
-              <div class="mb-2 px-2.5 py-1 rounded-xl bg-rose-600 text-white text-[11px] font-bold flex items-center justify-between">
-                <span class="truncate">⚠️ ${overdue.label}</span>
-                <span>❓</span>
-              </div>
-            ` : ''}
+              ${overdue.isOverdue ? `
+                <div class="px-2.5 py-1 rounded-xl bg-rose-600 text-white text-[11px] font-bold flex items-center justify-between">
+                  <span class="truncate">⚠️ ${overdue.label}</span>
+                  <span>❓</span>
+                </div>
+              ` : ''}
 
-            <div class="flex items-center justify-between gap-1 mb-2">
-              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold border ${st.badgeBg} truncate">
-                <span>${st.emoji}</span>
-                <span class="truncate">${t(st.ko, st.es)}</span>
-              </span>
-              <div class="flex items-center gap-1 shrink-0">
-                ${streak >= 2 ? `<span title="연속 체크 스트릭" class="text-[10px] px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-200 font-bold">🔥${streak}일</span>` : ''}
-                ${hasPin ? `<span title="${isUnlocked ? '인증됨' : 'PIN 잠금'}" class="text-[11px] px-1.5 py-0.5 rounded-full bg-white/90 border border-slate-200/80 ${isUnlocked ? 'text-emerald-600' : 'text-rose-600'} font-bold">${isUnlocked ? '🔓' : '🔒'}</span>` : ''}
-                <button type="button" onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'studio')" title="캐릭터·프로필 꾸미기" class="w-7 h-7 rounded-full bg-white/90 hover:bg-violet-100 text-slate-700 border border-slate-200/80 flex items-center justify-center text-xs shadow-2xs transition">
-                  🎨
-                </button>
+              <!-- Header Badge & Actions -->
+              <div class="flex items-center justify-between gap-1">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold border ${st.badgeBg} truncate">
+                  <span>${st.emoji}</span>
+                  <span class="truncate">${t(st.ko, st.es)}</span>
+                </span>
+                <div class="flex items-center gap-1 shrink-0">
+                  ${streak >= 2 ? `<span title="연속 체크 스트릭" class="text-[10px] px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-200 font-bold">🔥${streak}일</span>` : ''}
+                  ${hasPin ? `<span title="${isUnlocked ? '인증됨' : 'PIN 잠금'}" class="text-[11px] px-1.5 py-0.5 rounded-full bg-white/90 border border-slate-200/80 ${isUnlocked ? 'text-emerald-600' : 'text-rose-600'} font-bold">${isUnlocked ? '🔓' : '🔒'}</span>` : ''}
+                  <button type="button" onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'studio')" title="캐릭터·프로필 꾸미기" class="w-7 h-7 rounded-full bg-white/90 hover:bg-violet-100 text-slate-700 border border-slate-200/80 flex items-center justify-center text-xs shadow-2xs transition">
+                    🎨
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <!-- Left Profile + Right 5 Core Status Buttons -->
-            <div class="flex items-stretch gap-2 mb-2 min-w-0">
-              <div onclick="requireAuthAndRun('${m.id}', 'status')" class="cursor-pointer flex-1 min-w-0 flex flex-col justify-between space-y-1.5">
-                <div class="flex items-center gap-2">
-                  <div onclick="event.stopPropagation(); petAvatar(this)" class="relative w-14 h-14 rounded-2xl ${th.avatarBg} border-2 border-white shadow-xs flex items-center justify-center shrink-0 p-1 cursor-pointer hover:scale-105 transition-transform">
-                    <div class="w-full h-full anim-float">
-                      ${renderAvatarSVG(m.avatar, m.status, m.accessory, overdue.isOverdue)}
-                    </div>
-                  </div>
-                  <div class="min-w-0 flex-1">
-                    <h3 class="text-sm font-bold text-slate-800 truncate">${escapeHtml(m.name)}</h3>
-                    <p class="text-[10px] text-slate-500 font-medium truncate">${escapeHtml(m.role || 'Equipo Quito')}</p>
-                    <div class="text-[10px] font-semibold text-slate-600 flex items-center gap-1 flex-wrap mt-0.5">
-                      <span>🕒 ${cleanSince} ~</span>
-                      ${m.status === 'outing' && cleanReturn ? `<span class="px-1 py-0.5 rounded-md bg-sky-100 text-sky-800 font-bold">복귀 ${cleanReturn}</span>` : ''}
-                    </div>
+              <!-- Avatar & Basic Info -->
+              <div onclick="requireAuthAndRun('${m.id}', 'status')" class="cursor-pointer flex items-center gap-2.5 min-w-0">
+                <div onclick="event.stopPropagation(); petAvatar(this)" class="relative w-14 h-14 rounded-2xl ${th.avatarBg} border-2 border-white shadow-xs flex items-center justify-center shrink-0 p-1 cursor-pointer hover:scale-105 transition-transform">
+                  <div class="w-full h-full anim-float">
+                    ${renderAvatarSVG(m.avatar, m.status, m.accessory, overdue.isOverdue)}
                   </div>
                 </div>
-
-                ${m.status === 'working' ? `
-                  <div class="text-[10px] font-bold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-lg truncate">
-                    📍 ${escapeHtml(workLocText)}
+                <div class="min-w-0 flex-1">
+                  <h3 class="text-sm font-bold text-slate-800 truncate">${escapeHtml(m.name)}</h3>
+                  <p class="text-[10px] text-slate-500 font-medium truncate">${escapeHtml(m.role || 'Equipo Quito')}</p>
+                  <div class="text-[10px] font-semibold text-slate-600 flex items-center gap-1 flex-wrap mt-0.5">
+                    <span>🕒 ${cleanSince} ~</span>
+                    ${m.status === 'outing' && cleanReturn ? `<span class="px-1.5 py-0.5 rounded-md bg-sky-100 text-sky-800 font-bold">복귀 ${cleanReturn}</span>` : ''}
                   </div>
-                ` : ''}
-                ${m.status === 'outing' && m.reason ? `
-                  <div class="text-[10px] font-bold text-sky-800 bg-sky-100/80 px-2 py-0.5 rounded-lg truncate">
-                    📍 ${escapeHtml(m.reason)}
-                  </div>
-                ` : ''}
-                ${m.bubble ? `
-                  <div class="inline-block max-w-full bg-white/95 border border-slate-200/80 rounded-xl px-2 py-0.5 text-[10px] font-semibold text-slate-700 shadow-2xs truncate">
-                    💬 ${escapeHtml(m.bubble)}
-                  </div>
-                ` : ''}
+                </div>
               </div>
 
-              <!-- Right Core 5 Buttons -->
-              <div class="w-[74px] shrink-0 bg-white/75 rounded-2xl p-1.5 border border-slate-200/80 flex flex-col justify-between gap-1">
-                ${rightCoreButtonsHtml}
+              <!-- Horizontal Status Buttons Row -->
+              <div class="flex items-stretch gap-1 bg-white/75 rounded-2xl p-1 border border-slate-200/80">
+                ${horizontalStatusRowHtml}
               </div>
+
+              <!-- Location Badge Below Buttons -->
+              ${m.status === 'working' ? `
+                <div onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'row_working')" class="cursor-pointer text-[11px] font-bold text-emerald-800 bg-emerald-100/80 hover:bg-emerald-100 px-2.5 py-1 rounded-xl truncate">
+                  📍 ${escapeHtml(workLocText)}
+                </div>
+              ` : ''}
+              ${m.status === 'outing' && m.reason ? `
+                <div onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'row_outing')" class="cursor-pointer text-[11px] font-bold text-sky-800 bg-sky-100/80 hover:bg-sky-100 px-2.5 py-1 rounded-xl truncate">
+                  📍 ${escapeHtml(m.reason)}
+                </div>
+              ` : ''}
+
+              <!-- Bubble Note Below Location -->
+              ${m.bubble ? `
+                <div onclick="requireAuthAndRun('${m.id}', 'status')" class="cursor-pointer w-full bg-white/95 border border-slate-200/80 rounded-xl px-2.5 py-1 text-[11px] font-semibold text-slate-700 shadow-2xs truncate">
+                  💬 ${escapeHtml(m.bubble)}
+                </div>
+              ` : ''}
             </div>
 
-            <div onclick="requireAuthAndRun('${m.id}', 'status')" class="cursor-pointer bg-white/80 rounded-2xl p-2 border border-slate-200/70 space-y-1">
-              <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] font-bold text-slate-600">
-                <span class="text-emerald-700">💼 ${formatDuration(totals.working)}</span>
-                <span class="text-amber-700">☕ ${formatDuration(totals.break)}</span>
-                <span class="text-orange-700">🍱 ${formatDuration(totals.meal)}</span>
-                <span class="text-rose-700">🍳 ${formatDuration(totals.cooking)}</span>
-                <span class="text-sky-700">🚗 ${formatDuration(totals.outing)}</span>
+            <!-- Timers & Bottom Actions -->
+            <div class="space-y-2">
+              <div onclick="requireAuthAndRun('${m.id}', 'status')" class="cursor-pointer bg-white/80 rounded-2xl p-2 border border-slate-200/70 space-y-1">
+                <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] font-bold text-slate-600">
+                  <span class="text-emerald-700">💼 ${formatDuration(totals.working)}</span>
+                  <span class="text-amber-700">☕ ${formatDuration(totals.break)}</span>
+                  <span class="text-orange-700">🍱 ${formatDuration(totals.meal)}</span>
+                  <span class="text-rose-700">🍳 ${formatDuration(totals.cooking)}</span>
+                  <span class="text-sky-700">🚗 ${formatDuration(totals.outing)}</span>
+                </div>
+                <div class="w-full h-1.5 rounded-full bg-slate-200/80 overflow-hidden flex">
+                  ${totals.working > 0 ? `<div style="width:${pct(totals.working)}%" class="bg-emerald-500 h-full"></div>` : ''}
+                  ${totals.break > 0 ? `<div style="width:${pct(totals.break)}%" class="bg-amber-400 h-full"></div>` : ''}
+                  ${totals.meal > 0 ? `<div style="width:${pct(totals.meal)}%" class="bg-orange-400 h-full"></div>` : ''}
+                  ${totals.cooking > 0 ? `<div style="width:${pct(totals.cooking)}%" class="bg-rose-400 h-full"></div>` : ''}
+                  ${totals.outing > 0 ? `<div style="width:${pct(totals.outing)}%" class="bg-sky-500 h-full"></div>` : ''}
+                  ${totals.meeting > 0 ? `<div style="width:${pct(totals.meeting)}%" class="bg-violet-500 h-full"></div>` : ''}
+                </div>
               </div>
-              <div class="w-full h-1.5 rounded-full bg-slate-200/80 overflow-hidden flex">
-                ${totals.working > 0 ? `<div style="width:${pct(totals.working)}%" class="bg-emerald-500 h-full"></div>` : ''}
-                ${totals.break > 0 ? `<div style="width:${pct(totals.break)}%" class="bg-amber-400 h-full"></div>` : ''}
-                ${totals.meal > 0 ? `<div style="width:${pct(totals.meal)}%" class="bg-orange-400 h-full"></div>` : ''}
-                ${totals.cooking > 0 ? `<div style="width:${pct(totals.cooking)}%" class="bg-rose-400 h-full"></div>` : ''}
-                ${totals.outing > 0 ? `<div style="width:${pct(totals.outing)}%" class="bg-sky-500 h-full"></div>` : ''}
-                ${totals.meeting > 0 ? `<div style="width:${pct(totals.meeting)}%" class="bg-violet-500 h-full"></div>` : ''}
-              </div>
-            </div>
 
-            <div class="mt-2 flex flex-wrap items-center gap-1">
-              ${m.status !== 'working' ? `
-                <button type="button" onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'quickReturn')" class="flex-1 py-1.5 px-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold shadow-2xs transition truncate">
-                  🏢 ${t('사무실 복귀!', 'Volver')}
+              <div class="flex flex-wrap items-center gap-1">
+                ${m.status !== 'working' ? `
+                  <button type="button" onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'quickReturn')" class="flex-1 py-1.5 px-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold shadow-2xs transition truncate">
+                    🏢 ${t('사무실 복귀!', 'Volver')}
+                  </button>
+                ` : `
+                  <button type="button" onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'quickBreak')" class="flex-1 py-1.5 px-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-[11px] font-bold transition truncate">
+                    ☕ ${t('잠깐휴식', 'Descanso')}
+                  </button>
+                  <button type="button" onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'status')" class="py-1.5 px-2 rounded-xl bg-white hover:bg-amber-100/70 text-slate-700 border border-slate-200 text-[11px] font-bold transition shrink-0">
+                    ${hasPin && !isUnlocked ? '🔒' : '✨'}
+                  </button>
+                `}
+                <button type="button" onclick="event.stopPropagation(); openPokeModal('${m.id}')" title="위치 확인 호출 보내기" class="py-1.5 px-2 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 text-[11px] font-bold transition shrink-0">
+                  👉 콕
                 </button>
-              ` : `
-                <button type="button" onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'quickBreak')" class="flex-1 py-1.5 px-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-[11px] font-bold transition truncate">
-                  ☕ ${t('잠깐휴식', 'Descanso')}
-                </button>
-                <button type="button" onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'status')" class="py-1.5 px-2 rounded-xl bg-white hover:bg-amber-100/70 text-slate-700 border border-slate-200 text-[11px] font-bold transition shrink-0">
-                  ${hasPin && !isUnlocked ? '🔒' : '✨'}
-                </button>
-              `}
-              <button type="button" onclick="event.stopPropagation(); openPokeModal('${m.id}')" title="위치 확인 호출 보내기" class="py-1.5 px-2 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 text-[11px] font-bold transition shrink-0">
-                👉 콕
-              </button>
+              </div>
             </div>
           </div>
         `;
