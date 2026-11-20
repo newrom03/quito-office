@@ -95,16 +95,16 @@
         </button>
 
         <div class="inline-flex rounded-full bg-slate-100 p-1 border border-slate-200 text-xs font-bold gap-1">
-          <button type="button" onclick="bulkStatus('working')" class="px-2.5 py-1 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition">☀️ 전원 출근</button>
-          <button type="button" onclick="bulkStatus('off')" class="px-2.5 py-1 rounded-full bg-slate-200/70 hover:bg-slate-300/70 text-slate-700 transition">🌙 전원 퇴근</button>
-          <button type="button" onclick="resetAllTimers()" class="px-2.5 py-1 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 transition">⏱️ 시간 초기화</button>
+          <button type="button" id="btnAllIn" onclick="bulkStatus('working')" class="px-2.5 py-1 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition">☀️ 전원 출근</button>
+          <button type="button" id="btnAllOut" onclick="bulkStatus('off')" class="px-2.5 py-1 rounded-full bg-slate-200/70 hover:bg-slate-300/70 text-slate-700 transition">🌙 전원 퇴근</button>
+          <button type="button" id="btnResetTime" onclick="resetAllTimers()" class="px-2.5 py-1 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 transition">⏱️ 시간 초기화</button>
         </div>
 
-        <button type="button" onclick="openAddMemberModal()" class="px-3.5 py-1.5 rounded-full bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold text-xs shadow-sm transition flex items-center gap-1">
+        <button type="button" id="btnAddMember" onclick="openAddMemberModal()" class="px-3.5 py-1.5 rounded-full bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold text-xs shadow-sm transition flex items-center gap-1">
           ➕ 팀원 추가
         </button>
 
-        <button type="button" onclick="copyWhatsAppReport()" class="px-3.5 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-1.5">
+        <button type="button" id="btnWaReport" onclick="copyWhatsAppReport()" class="px-3.5 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-1.5">
           💬 Reporte WhatsApp
         </button>
       </div>
@@ -121,7 +121,7 @@
       <!-- Left Column: Team Board -->
       <div class="w-full lg:flex-1 space-y-4 min-w-0">
         <div class="bg-white/90 border border-amber-200/80 rounded-2xl px-4 py-3 flex flex-wrap items-center justify-between gap-2 shadow-sm">
-          <div class="text-xs sm:text-sm font-semibold text-slate-700">
+          <div id="helperBanner" class="text-xs sm:text-sm font-semibold text-slate-700">
             📊 본인 카드를 클릭해 상태를 바꾸고, 아바타를 톡톡 쓰다듬어 보세요 💕 · Haz clic en tu tarjeta
           </div>
           <div class="text-xs font-bold text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200" id="activeFilterLabel">
@@ -137,11 +137,11 @@
         <section class="bg-white/95 border-2 border-amber-200/80 rounded-3xl p-4 sm:p-5 shadow-sm">
           <div class="flex items-center justify-between mb-3 pb-2.5 border-b border-slate-100">
             <div>
-              <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">🔔 실시간 팀 이동 피드</h2>
-              <p class="text-[11px] text-slate-500 font-medium">Google Sheets 전체 동기화 · Quito (UTC-5)</p>
+              <h2 id="feedTitle" class="text-base font-bold text-slate-800 flex items-center gap-2">🔔 실시간 팀 이동 피드</h2>
+              <p id="feedSub" class="text-[11px] text-slate-500 font-medium">Google Sheets 전체 동기화 · Quito (UTC-5)</p>
             </div>
             <div class="flex items-center gap-1.5">
-              <button type="button" onclick="manualSync(true)" title="피드 새로고침" class="p-1 rounded-full hover:bg-slate-100 text-xs">🔄</button>
+              <button type="button" onclick="manualSync(true)" title="Refrescar" class="p-1 rounded-full hover:bg-slate-100 text-xs">🔄</button>
               <span id="feedCount" class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">0</span>
             </div>
           </div>
@@ -166,8 +166,8 @@
         class="w-40 mx-auto block px-4 py-2.5 rounded-2xl border-2 border-rose-200 focus:border-rose-500 focus:outline-none text-xl font-bold tracking-[0.4em] text-center mb-2">
       <p id="pinGateError" class="text-xs font-bold text-rose-600 h-4 mb-3"></p>
       <div class="flex items-center justify-center gap-2">
-        <button type="button" onclick="closeModal('pinGateModal')" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">취소</button>
-        <button type="button" onclick="confirmPinGate()" class="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-sm">🔓 잠금 해제</button>
+        <button type="button" id="btnPinCancel" onclick="closeModal('pinGateModal')" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">취소</button>
+        <button type="button" id="btnPinConfirm" onclick="confirmPinGate()" class="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-sm">🔓 잠금 해제</button>
       </div>
     </div>
   </div>
@@ -189,33 +189,33 @@
 
       <!-- Status Grid -->
       <div class="mb-4">
-        <label class="block text-xs font-bold text-slate-600 mb-2">상태 선택 · Seleccionar estado</label>
+        <label id="lblSelectStatus" class="block text-xs font-bold text-slate-600 mb-2">상태 선택 · Seleccionar estado</label>
         <div id="statusButtonsGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
       </div>
 
       <!-- Outing Extra Fields -->
       <div id="outingFields" class="hidden mb-4 p-3.5 rounded-2xl bg-sky-50/80 border border-sky-200 space-y-2.5">
-        <label class="block text-xs font-bold text-sky-900">외출 사유 · Motivo de salida</label>
+        <label id="lblOutingReason" class="block text-xs font-bold text-sky-900">외출 사유 · Motivo de salida</label>
         <div class="flex flex-wrap gap-1.5" id="reasonChips"></div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          <input type="text" id="inputReason" placeholder="사유 직접 입력 / Motivo..." class="sm:col-span-2 px-3 py-2 rounded-xl border border-sky-200 bg-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-sky-400">
+          <input type="text" id="inputReason" placeholder="Motivo de salida..." class="sm:col-span-2 px-3 py-2 rounded-xl border border-sky-200 bg-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-sky-400">
           <input type="time" id="inputReturnTime" class="px-3 py-2 rounded-xl border border-sky-200 bg-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-sky-400">
         </div>
       </div>
 
       <!-- Speech Bubble Quick Chips -->
       <div class="mb-4">
-        <label class="block text-xs font-bold text-slate-600 mb-1.5">한마디 / 말풍선 메모 (선택) · Nota rápida</label>
+        <label id="lblBubble" class="block text-xs font-bold text-slate-600 mb-1.5">한마디 / 말풍선 메모 (선택) · Nota rápida</label>
         <div class="flex flex-wrap gap-1.5 mb-2" id="bubbleChips"></div>
-        <input type="text" id="inputBubble" maxlength="40" placeholder="예: 오늘도 파이팅! 💪 / ¡Con toda!" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-amber-400">
+        <input type="text" id="inputBubble" maxlength="40" placeholder="¡Con toda! 💪" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-amber-400">
       </div>
 
       <div class="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100">
-        <button type="button" onclick="openAvatarStudioFromStatus()" class="px-3.5 py-2.5 rounded-xl bg-violet-50 hover:bg-violet-100 text-violet-700 border border-violet-200 text-xs font-bold transition cursor-pointer">
+        <button type="button" id="btnOpenStudio" onclick="openAvatarStudioFromStatus()" class="px-3.5 py-2.5 rounded-xl bg-violet-50 hover:bg-violet-100 text-violet-700 border border-violet-200 text-xs font-bold transition cursor-pointer">
           🎨 캐릭터·프로필 꾸미기
         </button>
         <div class="flex items-center gap-2">
-          <button type="button" onclick="closeModal('statusModal')" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold cursor-pointer">취소</button>
+          <button type="button" id="btnCancelStatus" onclick="closeModal('statusModal')" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold cursor-pointer">취소</button>
           <button type="button" id="btnSaveStatus" onclick="saveStatusChange()" class="px-6 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-500 active:scale-95 text-slate-900 text-xs font-bold shadow-sm cursor-pointer">✅ 저장하기 · Guardar</button>
         </div>
       </div>
@@ -233,35 +233,35 @@
       <div class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200/80 mb-4">
         <div id="studioPreviewBox" class="w-24 h-24 rounded-3xl flex items-center justify-center shadow-sm border-2 border-white shrink-0"></div>
         <div class="flex-1 space-y-2">
-          <input type="text" id="studioName" placeholder="이름 / Nombre" class="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-sm font-bold">
-          <input type="text" id="studioRole" placeholder="역할 / Rol (예: Coordinador)" class="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-medium">
+          <input type="text" id="studioName" placeholder="Nombre / 이름" class="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-sm font-bold">
+          <input type="text" id="studioRole" placeholder="Rol / 역할 (ej. Coordinador)" class="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-medium">
           <div class="flex items-center gap-2">
-            <span class="text-xs font-bold text-slate-600">🔒 잠금 PIN (4자리 숫자):</span>
-            <input type="text" id="studioPin" maxlength="4" inputmode="numeric" placeholder="미설정" class="w-24 px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-xs font-bold text-center">
+            <span id="lblStudioPin" class="text-xs font-bold text-slate-600">🔒 PIN (4 dígitos):</span>
+            <input type="text" id="studioPin" maxlength="4" inputmode="numeric" placeholder="Opcional" class="w-24 px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-xs font-bold text-center">
           </div>
         </div>
       </div>
 
       <div class="mb-4">
-        <label class="block text-xs font-bold text-slate-700 mb-2">1. 캐릭터 선택 (12종) · Elige tu personaje</label>
+        <label id="lblPickAvatar" class="block text-xs font-bold text-slate-700 mb-2">1. 캐릭터 선택 (12종) · Elige tu personaje</label>
         <div id="avatarPickerGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-2"></div>
       </div>
 
       <div class="mb-4">
-        <label class="block text-xs font-bold text-slate-700 mb-2">2. 머리 액세서리 (7종) · Accesorio</label>
+        <label id="lblPickAcc" class="block text-xs font-bold text-slate-700 mb-2">2. 머리 액세서리 (7종) · Accesorio</label>
         <div id="accessoryPickerGrid" class="flex flex-wrap gap-1.5"></div>
       </div>
 
       <div class="mb-5">
-        <label class="block text-xs font-bold text-slate-700 mb-2">3. 카드 배경 테마 (6종) · Color de tarjeta</label>
+        <label id="lblPickTheme" class="block text-xs font-bold text-slate-700 mb-2">3. 카드 배경 테마 (6종) · Color de tarjeta</label>
         <div id="themePickerGrid" class="flex flex-wrap gap-2"></div>
       </div>
 
       <div class="flex items-center justify-between pt-3 border-t border-slate-100">
-        <button type="button" id="btnDeleteMember" onclick="deleteCurrentMember()" class="px-3 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold hidden cursor-pointer">🗑️ 팀원 삭제</button>
+        <button type="button" id="btnDeleteMember" onclick="deleteCurrentMember()" class="px-3 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold hidden cursor-pointer">🗑️ Eliminar</button>
         <div class="flex items-center gap-2 ml-auto">
-          <button type="button" onclick="closeModal('avatarModal')" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold cursor-pointer">취소</button>
-          <button type="button" onclick="saveAvatarStudio()" class="px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 active:scale-95 text-white text-xs font-bold shadow-sm cursor-pointer">💾 저장하기 · Guardar</button>
+          <button type="button" id="btnCancelStudio" onclick="closeModal('avatarModal')" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold cursor-pointer">Cancelar</button>
+          <button type="button" id="btnSaveStudio" onclick="saveAvatarStudio()" class="px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 active:scale-95 text-white text-xs font-bold shadow-sm cursor-pointer">💾 Guardar</button>
         </div>
       </div>
     </div>
@@ -271,16 +271,16 @@
   <div id="sheetsModal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-sky-100">
       <div class="flex items-center justify-between mb-3">
-        <h3 class="text-lg font-bold text-slate-800">⚙️ Google Sheets 실시간 연동 설정</h3>
+        <h3 id="sheetsModalTitle" class="text-lg font-bold text-slate-800">⚙️ Google Sheets</h3>
         <button type="button" onclick="closeModal('sheetsModal')" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold">✕</button>
       </div>
-      <p class="text-xs text-slate-600 mb-3 leading-relaxed">
-        이미 키토 오피스 전용 Google Apps Script 주소가 내장되어 있어 자동으로 동기화됩니다. 다른 시트로 변경할 때만 아래 주소를 수정해 주세요.
+      <p id="sheetsModalDesc" class="text-xs text-slate-600 mb-3 leading-relaxed">
+        El enlace de Google Apps Script ya está integrado y sincroniza automáticamente en tiempo real.
       </p>
       <input type="text" id="gasUrlInput" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono mb-4 bg-slate-50">
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <button type="button" onclick="clearLocalCache()" class="px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold">🧹 로컬 캐시 비우기</button>
-        <button type="button" onclick="saveGasUrl()" class="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold">✅ 연결 및 동기화</button>
+        <button type="button" id="btnClearCache" onclick="clearLocalCache()" class="px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold">🧹 Limpiar caché</button>
+        <button type="button" id="btnConnectSheets" onclick="saveGasUrl()" class="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold">✅ Conectar</button>
       </div>
     </div>
   </div>
@@ -312,28 +312,28 @@
     };
 
     const AVATARS = [
-      { id: 'alpaca', label: '알파카 · Alpaca' },
-      { id: 'spectacled_bear', label: '안경곰 · Oso' },
-      { id: 'capybara', label: '카피바라 · Capibara' },
-      { id: 'blue_footed_booby', label: '부비새 · Piquero' },
-      { id: 'galapagos_penguin', label: '펭귄 · Pingüino' },
-      { id: 'strawberry_mochi', label: '딸기모찌 · Mochi' },
-      { id: 'coffee_bean', label: '원두콩 · Café' },
-      { id: 'maracuya', label: '마라쿠야 · Maracuyá' },
-      { id: 'quito_cloud', label: '판초구름 · Nube' },
-      { id: 'mini_glasses', label: '안경미니 · Mini Lentes' },
-      { id: 'mini_bob', label: '단발미니 · Mini Bob' },
-      { id: 'mini_cap', label: '모자미니 · Mini Gorra' }
+      { id: 'alpaca', ko: '알파카', es: 'Alpaca' },
+      { id: 'spectacled_bear', ko: '안경곰', es: 'Oso' },
+      { id: 'capybara', ko: '카피바라', es: 'Capibara' },
+      { id: 'blue_footed_booby', ko: '부비새', es: 'Piquero' },
+      { id: 'galapagos_penguin', ko: '펭귄', es: 'Pingüino' },
+      { id: 'strawberry_mochi', ko: '딸기모찌', es: 'Mochi' },
+      { id: 'coffee_bean', ko: '원두콩', es: 'Café' },
+      { id: 'maracuya', ko: '마라쿠야', es: 'Maracuyá' },
+      { id: 'quito_cloud', ko: '판초구름', es: 'Nube' },
+      { id: 'mini_glasses', ko: '안경미니', es: 'Mini Lentes' },
+      { id: 'mini_bob', ko: '단발미니', es: 'Mini Bob' },
+      { id: 'mini_cap', ko: '모자미니', es: 'Mini Gorra' }
     ];
 
     const ACCESSORIES = [
-      { id: 'none', label: '기본 · Ninguno', icon: '✨' },
-      { id: 'andes_hat', label: '안데스모자 · Sombrero', icon: '🎩' },
-      { id: 'maracuya_leaf', label: '새싹잎 · Hojita', icon: '🌱' },
-      { id: 'crown', label: '왕관 · Corona', icon: '👑' },
-      { id: 'headphones', label: '헤드폰 · Audífonos', icon: '🎧' },
-      { id: 'star_pin', label: '별핀 · Estrella', icon: '⭐' },
-      { id: 'ribbon', label: '리본 · Lazo', icon: '🎀' }
+      { id: 'none', ko: '기본', es: 'Ninguno', icon: '✨' },
+      { id: 'andes_hat', ko: '안데스모자', es: 'Sombrero', icon: '🎩' },
+      { id: 'maracuya_leaf', ko: '새싹잎', es: 'Hojita', icon: '🌱' },
+      { id: 'crown', ko: '왕관', es: 'Corona', icon: '👑' },
+      { id: 'headphones', ko: '헤드폰', es: 'Audífonos', icon: '🎧' },
+      { id: 'star_pin', ko: '별핀', es: 'Estrella', icon: '⭐' },
+      { id: 'ribbon', ko: '리본', es: 'Lazo', icon: '🎀' }
     ];
 
     const THEMES = {
@@ -349,12 +349,12 @@
     };
 
     const OUTING_REASONS = [
-      { ko: '🏦 은행 업무', es: 'Trámite bancario' },
-      { ko: '🤝 외부 미팅', es: 'Reunión externa' },
-      { ko: '🏛️ 시청·행정', es: 'Municipio / Gestión' },
-      { ko: '🛍️ 물품 구매', es: 'Compras / Suministros' },
-      { ko: '🏫 문화센터 이동', es: 'Centro Cultural' },
-      { ko: '🏥 병원·약국', es: 'Cita médica' }
+      { ko: '🏦 은행 업무', es: '🏦 Trámite bancario' },
+      { ko: '🤝 외부 미팅', es: '🤝 Reunión externa' },
+      { ko: '🏛️ 시청·행정', es: '🏛️ Municipio / Gestión' },
+      { ko: '🛍️ 물품 구매', es: '🛍️ Compras / Suministros' },
+      { ko: '🏫 문화센터 이동', es: '🏫 Centro Cultural' },
+      { ko: '🏥 병원·약국', es: '🏥 Cita médica' }
     ];
 
     const BUBBLE_PRESETS = [
@@ -369,6 +369,52 @@
     let members = JSON.parse(localStorage.getItem('quito_members_v5') || '[]');
     let activityLogs = JSON.parse(localStorage.getItem('quito_logs_v5') || '[]');
 
+    function t(ko, es) {
+      if (currentLang === 'ko') return ko;
+      if (currentLang === 'es') return es;
+      return `${ko} · ${es}`;
+    }
+
+    function applyStaticTranslations() {
+      document.getElementById('appTitle').textContent = t('키토 오피스', 'Tablero Quito');
+      document.getElementById('btnAllIn').textContent = `☀️ ${t('전원 출근', 'Todos entran')}`;
+      document.getElementById('btnAllOut').textContent = `🌙 ${t('전원 퇴근', 'Todos salen')}`;
+      document.getElementById('btnResetTime').textContent = `⏱️ ${t('시간 초기화', 'Reiniciar tiempos')}`;
+      document.getElementById('btnAddMember').textContent = `➕ ${t('팀원 추가', 'Agregar integrante')}`;
+      document.getElementById('btnWaReport').textContent = `💬 ${t('카톡/왓츠앱 보고', 'Reporte WhatsApp')}`;
+
+      document.getElementById('helperBanner').textContent = `📊 ${t('본인 카드를 클릭해 상태를 바꾸고, 아바타를 톡톡 쓰다듬어 보세요 💕', 'Haz clic en tu tarjeta para cambiar tu estado o acaricia tu avatar 💕')}`;
+      document.getElementById('feedTitle').textContent = `🔔 ${t('실시간 팀 이동 피드', 'Actividad del equipo en vivo')}`;
+      document.getElementById('feedSub').textContent = `Google Sheets · ${t('전체 실시간 동기화', 'Sincronizado en vivo')} · Quito (UTC-5)`;
+
+      // Modals
+      document.getElementById('lblSelectStatus').textContent = t('상태 선택', 'Seleccionar estado');
+      document.getElementById('lblOutingReason').textContent = t('외출 사유 및 복귀 시간', 'Motivo de salida y hora de regreso');
+      document.getElementById('lblBubble').textContent = t('한마디 / 말풍선 메모 (선택)', 'Nota rápida / Burbuja (opcional)');
+      document.getElementById('btnOpenStudio').textContent = `🎨 ${t('캐릭터·프로필 꾸미기', 'Personalizar avatar')}`;
+      document.getElementById('btnCancelStatus').textContent = t('취소', 'Cancelar');
+      document.getElementById('btnSaveStatus').textContent = `✅ ${t('저장하기', 'Guardar')}`;
+
+      document.getElementById('lblStudioPin').textContent = `🔒 ${t('잠금 PIN (4자리):', 'PIN de bloqueo (4 dígitos):')}`;
+      document.getElementById('lblPickAvatar').textContent = `1. ${t('캐릭터 선택 (12종)', 'Elige tu personaje (12)')}`;
+      document.getElementById('lblPickAcc').textContent = `2. ${t('머리 액세서리 (7종)', 'Accesorio (7)')}`;
+      document.getElementById('lblPickTheme').textContent = `3. ${t('카드 배경 테마 (6종)', 'Color de tarjeta (6)')}`;
+      document.getElementById('btnDeleteMember').textContent = `🗑️ ${t('팀원 삭제', 'Eliminar')}`;
+      document.getElementById('btnCancelStudio').textContent = t('취소', 'Cancelar');
+      document.getElementById('btnSaveStudio').textContent = `💾 ${t('저장하기', 'Guardar')}`;
+
+      document.getElementById('btnPinCancel').textContent = t('취소', 'Cancelar');
+      document.getElementById('btnPinConfirm').textContent = `🔓 ${t('잠금 해제', 'Desbloquear')}`;
+
+      document.getElementById('sheetsModalTitle').textContent = `⚙️ ${t('Google Sheets 실시간 연동', 'Sincronización con Google Sheets')}`;
+      document.getElementById('sheetsModalDesc').textContent = t(
+        '이미 키토 오피스 전용 Google Apps Script 주소가 내장되어 있어 자동으로 동기화됩니다.',
+        'El enlace de Google Apps Script ya está integrado y sincroniza automáticamente en tiempo real.'
+      );
+      document.getElementById('btnClearCache').textContent = `🧹 ${t('로컬 캐시 비우기', 'Limpiar caché')}`;
+      document.getElementById('btnConnectSheets').textContent = `✅ ${t('연결 및 동기화', 'Conectar')}`;
+    }
+
     function getQuitoNow() {
       const now = new Date();
       const fmtTime = new Intl.DateTimeFormat('es-EC', {
@@ -382,7 +428,7 @@
       }).format(now);
       const fmtDayKey = new Intl.DateTimeFormat('en-CA', {
         timeZone: 'America/Guayaquil', year: 'numeric', month: '2-digit', day: '2-digit'
-      }).format(now); // YYYY-MM-DD in Quito
+      }).format(now);
       return { time: fmtTime, short: fmtShort, date: fmtDate, dayKey: fmtDayKey, ms: now.getTime() };
     }
 
@@ -410,19 +456,13 @@
     function formatSheetLogDetail(row) {
       const act = String(row.action_type || '');
       const stObj = STATUSES[row.status];
-      if (act === 'ADD_MEMBER') return '➕ 새 팀원 등록 · Nuevo integrante';
-      if (act === 'UPDATE_AVATAR') return `🎨 프로필 꾸미기 · ${row.avatar_config || ''}`;
-      if (act === 'RETURN_OFFICE') return '🏢 사무실 복귀 · Regreso a oficina';
+      if (act === 'ADD_MEMBER') return `➕ ${t('새 팀원 등록', 'Nuevo integrante')}`;
+      if (act === 'UPDATE_AVATAR') return `🎨 ${t('프로필 꾸미기', 'Avatar actualizado')} · ${row.avatar_config || ''}`;
+      if (act === 'RETURN_OFFICE') return `🏢 ${t('사무실 복귀', 'Regreso a oficina')}`;
       if (stObj) {
-        return `${stObj.emoji} ${stObj.es}${row.reason ? ' (' + row.reason + ')' : ''}${row.bubble ? ' · "' + row.bubble + '"' : ''}`;
+        return `${stObj.emoji} ${t(stObj.ko, stObj.es)}${row.reason ? ' (' + row.reason + ')' : ''}${row.bubble ? ' · "' + row.bubble + '"' : ''}`;
       }
       return row.status || act || 'Actualización';
-    }
-
-    function t(ko, es) {
-      if (currentLang === 'ko') return ko;
-      if (currentLang === 'es') return es;
-      return `${ko} · ${es}`;
     }
 
     function formatDuration(sec) {
@@ -448,7 +488,6 @@
         }
       }
       const candidate = parsed || fallbackTotals || emptyTotals();
-      // Preserve totals throughout the same Quito day even after going 'off' and returning!
       if (candidate.dayKey && candidate.dayKey !== todayKey) {
         return emptyTotals();
       }
@@ -470,7 +509,6 @@
       }
       const base = { ...emptyTotals(), ...(m.totals || {}) };
       const ts = Number(m.updatedAt);
-      // Only accumulate live active seconds while NOT 'off' (when 'off', previous totals remain frozen & intact!)
       if (m.status && m.status !== 'off' && !isNaN(ts) && ts > 0) {
         const elapsedSec = Math.max(0, (Date.now() - ts) / 1000);
         if (base[m.status] !== undefined && elapsedSec < 86400) {
@@ -487,7 +525,6 @@
       }
       m.totals.dayKey = todayKey;
       const ts = Number(m.updatedAt);
-      // Save accumulated seconds from the previous active status before switching (if previous was 'off', nothing is erased!)
       if (m.status && m.status !== 'off' && !isNaN(ts) && ts > 0) {
         const elapsedSec = Math.max(0, (Date.now() - ts) / 1000);
         if (m.totals[m.status] !== undefined && elapsedSec < 86400) {
@@ -513,8 +550,8 @@
         return;
       }
       pendingGateAction = { memberId, actionType };
-      document.getElementById('pinGateTitle').textContent = `🔒 ${m.name} · 본인 확인`;
-      document.getElementById('pinGateSub').textContent = '잠금 설정된 프로필입니다. 4자리 PIN을 입력해 주세요.';
+      document.getElementById('pinGateTitle').textContent = `🔒 ${m.name} · ${t('본인 확인', 'Verificar identidad')}`;
+      document.getElementById('pinGateSub').textContent = t('잠금 설정된 카드입니다. 4자리 PIN을 입력해 주세요.', 'Perfil protegido. Ingresa tu PIN de 4 dígitos.');
       document.getElementById('pinGateInput').value = '';
       document.getElementById('pinGateError').textContent = '';
       openModal('pinGateModal');
@@ -532,7 +569,7 @@
         closeModal('pinGateModal');
         executeProtectedAction(memberId, actionType);
       } else {
-        document.getElementById('pinGateError').textContent = '❌ PIN 번호가 일치하지 않습니다!';
+        document.getElementById('pinGateError').textContent = `❌ ${t('PIN 번호가 일치하지 않습니다!', '¡PIN incorrecto!')}`;
         const card = document.getElementById('pinGateCard');
         card.classList.remove('anim-shake');
         void card.offsetWidth;
@@ -761,7 +798,7 @@
         `;
       });
       bar.innerHTML = html;
-      const activeName = currentFilter === 'all' ? t('전체 팀원', 'Todo') : t(STATUSES[currentFilter].ko, STATUSES[currentFilter].es);
+      const activeName = currentFilter === 'all' ? t('전체 팀원', 'Todo el equipo') : t(STATUSES[currentFilter].ko, STATUSES[currentFilter].es);
       document.getElementById('activeFilterLabel').textContent = `${activeName} (${counts[currentFilter]})`;
     }
 
@@ -773,10 +810,10 @@
         grid.innerHTML = `
           <div class="col-span-full bg-white/90 border-2 border-dashed border-amber-300 rounded-3xl p-10 text-center space-y-3">
             <div class="text-4xl">🦙✨</div>
-            <h3 class="text-base font-bold text-slate-800">${t('등록된 팀원이 없습니다 · No hay integrantes aún', 'No hay integrantes aún')}</h3>
-            <p class="text-xs text-slate-500">${t('상단의 [➕ 팀원 추가] 버튼을 눌러 팀원을 등록하고 캐릭터를 꾸며보세요!', 'Haz clic en [➕ 팀원 추가] para agregar al equipo.')}</p>
+            <h3 class="text-base font-bold text-slate-800">${t('등록된 팀원이 없습니다', 'No hay integrantes aún')}</h3>
+            <p class="text-xs text-slate-500">${t('상단의 [➕ 팀원 추가] 버튼을 눌러 팀원을 등록하고 캐릭터를 꾸며보세요!', 'Haz clic en [➕ Agregar integrante] para agregar al equipo.')}</p>
             <button type="button" onclick="openAddMemberModal()" class="px-4 py-2 rounded-full bg-amber-400 hover:bg-amber-500 text-slate-900 text-xs font-bold shadow-xs">
-              ➕ 첫 팀원 등록하기 · Agregar integrante
+              ➕ ${t('첫 팀원 등록하기', 'Agregar primer integrante')}
             </button>
           </div>
         `;
@@ -803,8 +840,8 @@
                 <span>${t(st.ko, st.es)}</span>
               </span>
               <div class="flex items-center gap-1">
-                ${hasPin ? `<span title="${isUnlocked ? '인증됨' : 'PIN 잠금'}" class="text-xs px-2 py-0.5 rounded-full bg-white/90 border border-slate-200/80 ${isUnlocked ? 'text-emerald-600' : 'text-rose-600'} font-bold">${isUnlocked ? '🔓' : '🔒'}</span>` : ''}
-                <button type="button" onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'studio')" title="캐릭터·프로필 꾸미기" class="w-8 h-8 rounded-full bg-white/90 hover:bg-violet-100 text-slate-700 border border-slate-200/80 flex items-center justify-center text-sm shadow-2xs transition">
+                ${hasPin ? `<span title="${isUnlocked ? t('인증됨', 'Desbloqueado') : t('PIN 잠금', 'Protegido con PIN')}" class="text-xs px-2 py-0.5 rounded-full bg-white/90 border border-slate-200/80 ${isUnlocked ? 'text-emerald-600' : 'text-rose-600'} font-bold">${isUnlocked ? '🔓' : '🔒'}</span>` : ''}
+                <button type="button" onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'studio')" title="${t('캐릭터·프로필 꾸미기', 'Personalizar avatar')}" class="w-8 h-8 rounded-full bg-white/90 hover:bg-violet-100 text-slate-700 border border-slate-200/80 flex items-center justify-center text-sm shadow-2xs transition">
                   🎨
                 </button>
               </div>
@@ -822,7 +859,7 @@
                 <p class="text-xs text-slate-500 font-medium truncate mb-1.5">${escapeHtml(m.role || 'Equipo Quito')}</p>
                 <div class="text-[11px] font-semibold text-slate-600 flex items-center gap-1.5">
                   <span>🕒 ${cleanSince} ~</span>
-                  ${m.status === 'outing' && cleanReturn ? `<span class="px-1.5 py-0.5 rounded-md bg-sky-100 text-sky-800 font-bold">복귀 ${cleanReturn}</span>` : ''}
+                  ${m.status === 'outing' && cleanReturn ? `<span class="px-1.5 py-0.5 rounded-md bg-sky-100 text-sky-800 font-bold">${t('복귀', 'Regreso')} ${cleanReturn}</span>` : ''}
                 </div>
                 ${m.status === 'outing' && m.reason ? `
                   <div class="mt-1 text-xs font-bold text-sky-800 bg-sky-100/80 px-2 py-0.5 rounded-lg truncate">
@@ -917,11 +954,11 @@
 
       const totals = getLiveTotals(m);
       document.getElementById('modalMemberTimers').innerHTML = `
-        <span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700">💼 근무 ${formatDuration(totals.working)}</span>
-        <span class="px-2 py-0.5 rounded-md bg-amber-50 text-amber-700">☕ 휴식 ${formatDuration(totals.break)}</span>
-        <span class="px-2 py-0.5 rounded-md bg-orange-50 text-orange-700">🍱 식사 ${formatDuration(totals.meal)}</span>
-        <span class="px-2 py-0.5 rounded-md bg-rose-50 text-rose-700">🍳 요리 ${formatDuration(totals.cooking)}</span>
-        <span class="px-2 py-0.5 rounded-md bg-sky-50 text-sky-700">🚗 외출 ${formatDuration(totals.outing)}</span>
+        <span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700">💼 ${t('근무', 'Trabajo')} ${formatDuration(totals.working)}</span>
+        <span class="px-2 py-0.5 rounded-md bg-amber-50 text-amber-700">☕ ${t('휴식', 'Descanso')} ${formatDuration(totals.break)}</span>
+        <span class="px-2 py-0.5 rounded-md bg-orange-50 text-orange-700">🍱 ${t('식사', 'Almuerzo')} ${formatDuration(totals.meal)}</span>
+        <span class="px-2 py-0.5 rounded-md bg-rose-50 text-rose-700">🍳 ${t('요리', 'Cocina')} ${formatDuration(totals.cooking)}</span>
+        <span class="px-2 py-0.5 rounded-md bg-sky-50 text-sky-700">🚗 ${t('외출', 'Salida')} ${formatDuration(totals.outing)}</span>
       `;
 
       document.getElementById('inputReason').value = m.reason || '';
@@ -943,8 +980,8 @@
           <button type="button" onclick="selectStatusInModal('${key}')" class="p-2.5 rounded-2xl border-2 text-left transition flex items-center gap-2 ${selected ? 'border-amber-400 bg-amber-50 shadow-xs' : 'border-slate-200 bg-white hover:bg-slate-50'}">
             <span class="text-lg">${st.emoji}</span>
             <div class="min-w-0">
-              <div class="text-xs font-bold text-slate-800 truncate">${st.ko}</div>
-              <div class="text-[10px] font-semibold text-slate-500 truncate">${st.es}</div>
+              <div class="text-xs font-bold text-slate-800 truncate">${currentLang === 'es' ? st.es : st.ko}</div>
+              ${currentLang === 'both' ? `<div class="text-[10px] font-semibold text-slate-500 truncate">${st.es}</div>` : ''}
             </div>
           </button>
         `;
@@ -967,7 +1004,7 @@
 
     function renderReasonChips() {
       document.getElementById('reasonChips').innerHTML = OUTING_REASONS.map(r => `
-        <button type="button" onclick="document.getElementById('inputReason').value='${r.es}'" class="px-2.5 py-1 rounded-full bg-white hover:bg-sky-100 border border-sky-200 text-[11px] font-bold text-sky-800 transition">
+        <button type="button" onclick="document.getElementById('inputReason').value='${r.es.replace(/^[^\s]+\s/, '')}'" class="px-2.5 py-1 rounded-full bg-white hover:bg-sky-100 border border-sky-200 text-[11px] font-bold text-sky-800 transition">
           ${t(r.ko, r.es)}
         </button>
       `).join('');
@@ -997,7 +1034,7 @@
       m.bubble = document.getElementById('inputBubble').value.trim();
 
       const st = STATUSES[m.status];
-      const detail = `${st.emoji} ${st.es}${m.reason ? ' (' + m.reason + ')' : ''}${m.bubble ? ' · "' + m.bubble + '"' : ''}`;
+      const detail = `${st.emoji} ${t(st.ko, st.es)}${m.reason ? ' (' + m.reason + ')' : ''}${m.bubble ? ' · "' + m.bubble + '"' : ''}`;
       pushLog(m, 'STATUS_CHANGE', detail);
       closeModal('statusModal');
       renderAll();
@@ -1014,7 +1051,7 @@
       m.since = qNow.short;
       m.reason = '';
       m.returnTime = '';
-      pushLog(m, 'RETURN_OFFICE', '🏢 사무실 복귀 · Regreso a oficina');
+      pushLog(m, 'RETURN_OFFICE', `🏢 ${t('사무실 복귀', 'Regreso a oficina')}`);
       renderAll();
       showToast(`🏢 ${m.name} ${t('사무실 복귀 완료!', 'regresó a la oficina')}`);
       persistAndSync(m, 'RETURN_OFFICE');
@@ -1035,12 +1072,12 @@
         m.reason = '';
         m.returnTime = '';
       });
-      pushLog({ id: 'ALL', name: 'Equipo' }, 'BULK_UPDATE', `${STATUSES[newStatus].emoji} ${STATUSES[newStatus].es}`);
+      pushLog({ id: 'ALL', name: 'Equipo' }, 'BULK_UPDATE', `${STATUSES[newStatus].emoji} ${t(STATUSES[newStatus].ko, STATUSES[newStatus].es)}`);
       saveLocal();
       syncAllToSheets();
       renderAll();
       if (skipped > 0) {
-        showToast(`${STATUSES[newStatus].emoji} 잠금되지 않은 팀원만 일괄 변경됨 (잠금 ${skipped}명 제외)`);
+        showToast(`${STATUSES[newStatus].emoji} ${t(`잠금되지 않은 팀원만 변경됨 (${skipped}명 제외)`, `Actualizado (${skipped} protegidos con PIN)`)}`);
       } else {
         showToast(`${STATUSES[newStatus].emoji} ${t('전체 팀원 상태 일괄 변경 완료!', 'Estado actualizado para todos')}`);
       }
@@ -1066,7 +1103,7 @@
       studioMode = 'add';
       selectedMemberId = null;
       studioDraft = { avatar: 'alpaca', accessory: 'none', theme: 'amber' };
-      document.getElementById('studioTitle').textContent = '➕ 새 팀원 추가 · Nuevo integrante';
+      document.getElementById('studioTitle').textContent = `➕ ${t('새 팀원 추가', 'Agregar integrante')}`;
       document.getElementById('studioName').value = '';
       document.getElementById('studioRole').value = 'Equipo Quito';
       document.getElementById('studioPin').value = '';
@@ -1081,7 +1118,7 @@
       studioMode = 'edit';
       selectedMemberId = memberId;
       studioDraft = { avatar: m.avatar || 'alpaca', accessory: m.accessory || 'none', theme: m.theme || 'amber' };
-      document.getElementById('studioTitle').textContent = '🎨 아바타 & 프로필 스튜디오';
+      document.getElementById('studioTitle').textContent = `🎨 ${t('아바타 & 프로필 스튜디오', 'Estudio de Avatar y Perfil')}`;
       document.getElementById('studioName').value = m.name;
       document.getElementById('studioRole').value = m.role || '';
       document.getElementById('studioPin').value = m.pin || '';
@@ -1099,13 +1136,13 @@
       document.getElementById('avatarPickerGrid').innerHTML = AVATARS.map(av => `
         <button type="button" onclick="studioDraft.avatar='${av.id}'; renderStudioPickers()" class="p-2 rounded-2xl border-2 flex flex-col items-center gap-1 transition ${studioDraft.avatar === av.id ? 'border-violet-500 bg-violet-50' : 'border-slate-200 hover:bg-slate-50'}">
           <div class="w-12 h-12">${renderAvatarSVG(av.id, 'working', 'none')}</div>
-          <span class="text-[10px] font-bold text-slate-700 truncate w-full text-center">${av.label}</span>
+          <span class="text-[10px] font-bold text-slate-700 truncate w-full text-center">${t(av.ko, av.es)}</span>
         </button>
       `).join('');
 
       document.getElementById('accessoryPickerGrid').innerHTML = ACCESSORIES.map(ac => `
         <button type="button" onclick="studioDraft.accessory='${ac.id}'; renderStudioPickers()" class="px-3 py-1.5 rounded-full border-2 text-xs font-bold transition ${studioDraft.accessory === ac.id ? 'border-violet-500 bg-violet-50 text-violet-800' : 'border-slate-200 text-slate-600'}">
-          ${ac.icon} ${ac.label}
+          ${ac.icon} ${t(ac.ko, ac.es)}
         </button>
       `).join('');
 
@@ -1122,7 +1159,7 @@
     function saveAvatarStudio() {
       const name = document.getElementById('studioName').value.trim();
       if (!name) {
-        showToast('⚠️ 이름을 입력해 주세요 · Ingresa un nombre');
+        showToast(`⚠️ ${t('이름을 입력해 주세요', 'Ingresa un nombre')}`);
         return;
       }
       const role = document.getElementById('studioRole').value.trim();
@@ -1149,10 +1186,10 @@
         };
         if (pin) unlockedMembers.add(newId);
         members.push(newMember);
-        pushLog(newMember, 'ADD_MEMBER', '➕ 새 팀원 등록 · Nuevo integrante');
+        pushLog(newMember, 'ADD_MEMBER', `➕ ${t('새 팀원 등록', 'Nuevo integrante')}`);
         closeModal('avatarModal');
         renderAll();
-        showToast('🎨 프로필이 저장되었습니다 · Guardado');
+        showToast(`🎨 ${t('프로필이 저장되었습니다', 'Perfil guardado')}`);
         persistAndSync(newMember, 'ADD_MEMBER');
       } else {
         const m = members.find(x => x.id === selectedMemberId);
@@ -1164,10 +1201,10 @@
           m.theme = studioDraft.theme;
           m.pin = pin;
           if (pin) unlockedMembers.add(m.id);
-          pushLog(m, 'UPDATE_AVATAR', `🎨 프로필 꾸미기 · ${studioDraft.avatar}`);
+          pushLog(m, 'UPDATE_AVATAR', `🎨 ${t('프로필 꾸미기', 'Avatar actualizado')} · ${studioDraft.avatar}`);
           closeModal('avatarModal');
           renderAll();
-          showToast('🎨 프로필이 저장되었습니다 · Guardado');
+          showToast(`🎨 ${t('프로필이 저장되었습니다', 'Perfil guardado')}`);
           persistAndSync(m, 'UPDATE_AVATAR');
         }
       }
@@ -1188,7 +1225,7 @@
         }
         closeModal('avatarModal');
         renderAll();
-        showToast(`🗑️ ${removed.name} 삭제됨`);
+        showToast(`🗑️ ${removed.name} ${t('삭제됨', 'eliminado')}`);
       }
     }
 
@@ -1206,7 +1243,7 @@
       closeModal('sheetsModal');
       manualSync(true);
       renderAll();
-      showToast('🧹 로컬 캐시 초기화 완료');
+      showToast(`🧹 ${t('로컬 캐시 초기화 완료', 'Caché limpiada')}`);
     }
 
     function pushLog(m, actionType, detail) {
@@ -1295,7 +1332,6 @@
 
     async function manualSync(force = false) {
       if (!gasUrl || isSyncingNow) return;
-      // Do not overwrite UI while user is actively editing inside a modal unless forced
       if (!force && isAnyModalOpen()) return;
 
       isSyncingNow = true;
@@ -1364,7 +1400,7 @@
         localStorage.setItem('quito_gas_url', val);
         closeModal('sheetsModal');
         manualSync(true);
-        showToast('✅ Google Sheets URL 업데이트 완료');
+        showToast('✅ Google Sheets URL actualizado');
       }
     }
 
@@ -1383,7 +1419,7 @@
         lines.push(`${st.emoji} *${m.name}*: ${st.es}${extra} [💼${formatDuration(tot.working)} / ☕${formatDuration(tot.break)} / 🍱${formatDuration(tot.meal)} / 🍳${formatDuration(tot.cooking)}]`);
       });
       navigator.clipboard.writeText(lines.join('\n')).then(() => {
-        showToast('📋 WhatsApp 보고서가 복사되었습니다 · Copiado');
+        showToast(`📋 ${t('WhatsApp 보고서가 복사되었습니다', 'Reporte WhatsApp copiado')}`);
       });
     }
 
@@ -1396,6 +1432,7 @@
           ? 'px-2.5 py-1 rounded-full bg-amber-400 text-slate-900 shadow-2xs transition'
           : 'px-2.5 py-1 rounded-full text-slate-600 hover:text-slate-900 transition';
       });
+      applyStaticTranslations();
       renderAll();
     }
 
