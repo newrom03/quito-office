@@ -69,7 +69,7 @@
 
   <!-- Top Header -->
   <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-amber-200/70 shadow-sm">
-    <div class="max-w-[1680px] mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-3">
+    <div class="max-w-[1760px] mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-300 to-orange-400 flex items-center justify-center text-2xl shadow-sm border-2 border-white">
           🦙
@@ -95,9 +95,9 @@
         </div>
 
         <div class="inline-flex rounded-full bg-slate-100 p-1 border border-slate-200 text-xs font-bold">
-          <button type="button" onclick="setLang('both')" id="lang-both" class="px-2.5 py-1 rounded-full transition">🌐 ES/KO</button>
-          <button type="button" onclick="setLang('ko')" id="lang-ko" class="px-2.5 py-1 rounded-full transition">🇰🇷 KO</button>
-          <button type="button" onclick="setLang('es')" id="lang-es" class="px-2.5 py-1 rounded-full transition">🇪🇨 ES</button>
+          <button type="button" onclick="setLang('both')" id="lang-both" class="px-2.5 py-1 rounded-full transition">🌐 한·서 병기</button>
+          <button type="button" onclick="setLang('ko')" id="lang-ko" class="px-2.5 py-1 rounded-full transition">🇰🇷 한국어</button>
+          <button type="button" onclick="setLang('es')" id="lang-es" class="px-2.5 py-1 rounded-full transition">🇪🇨 Español</button>
         </div>
 
         <div id="adminControlsGroup" class="hidden flex-wrap items-center gap-2">
@@ -122,15 +122,15 @@
       </div>
     </div>
 
-    <div class="max-w-[1680px] mx-auto px-4 pb-2.5 flex items-center gap-2 overflow-x-auto no-scrollbar" id="filterBar"></div>
+    <div class="max-w-[1760px] mx-auto px-4 pb-2.5 flex items-center gap-2 overflow-x-auto no-scrollbar" id="filterBar"></div>
   </header>
 
-  <main class="max-w-[1680px] mx-auto px-3 sm:px-4 pt-4">
+  <main class="max-w-[1760px] mx-auto px-3 sm:px-4 pt-4">
     <div id="mainLayout" class="flex flex-col lg:flex-row items-start gap-4">
       <div class="w-full lg:flex-1 space-y-3.5 min-w-0">
         <div class="bg-white/90 border border-amber-200/80 rounded-2xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 shadow-sm">
           <div class="text-xs sm:text-sm font-semibold text-slate-700">
-            📊 카드를 눌러 상태를 변경하고, 잠깐 휴식이나 호출은 <span class="text-amber-700 font-bold">[☕ 잠깐휴식]</span> · <span class="text-rose-600 font-bold">[👉 콕 찌르기]</span>를 눌러 보세요!
+            📊 카드 오른쪽 버튼으로 상태를 바로 누르고, <span class="text-amber-700 font-bold">[☕ 잠깐휴식]</span> · <span class="text-rose-600 font-bold">[👉 콕]</span>을 눌러 보세요!
           </div>
           <div class="text-xs font-bold text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200" id="activeFilterLabel">
             전체 팀원 (0)
@@ -327,23 +327,25 @@
     const localEditGuard = {};
 
     const STATUSES = {
-      working:  { ko: '열일 중', es: 'Trabajando', emoji: '💻', badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
-      break:    { ko: '휴식 중', es: 'En descanso', emoji: '☕', badgeBg: 'bg-amber-100 text-amber-800 border-amber-200' },
-      meal:     { ko: '식사 중', es: 'Almorzando', emoji: '🍱', badgeBg: 'bg-orange-100 text-orange-800 border-orange-200' },
-      cooking:  { ko: '요리 중', es: 'Cocinando', emoji: '🍳', badgeBg: 'bg-rose-100 text-rose-800 border-rose-200' },
-      outing:   { ko: '외출·외근', es: 'Salida / Trámite', emoji: '🚗', badgeBg: 'bg-sky-100 text-sky-800 border-sky-200' },
-      meeting:  { ko: '회의·교육', es: 'En reunión', emoji: '🎧', badgeBg: 'bg-violet-100 text-violet-800 border-violet-200' },
-      off:      { ko: '퇴근 · 출근 전', es: 'Fuera de oficina', emoji: '🌙', badgeBg: 'bg-slate-200 text-slate-700 border-slate-300' }
+      working:  { ko: '열일 중', es: 'Trabajando', shortKo: '열일', emoji: '💻', badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+      break:    { ko: '휴식 중', es: 'Descanso', shortKo: '휴식', emoji: '☕', badgeBg: 'bg-amber-100 text-amber-800 border-amber-200' },
+      meal:     { ko: '식사 중', es: 'Almuerzo', shortKo: '식사', emoji: '🍱', badgeBg: 'bg-orange-100 text-orange-800 border-orange-200' },
+      cooking:  { ko: '요리 중', es: 'Cocina', shortKo: '요리', emoji: '🍳', badgeBg: 'bg-rose-100 text-rose-800 border-rose-200' },
+      outing:   { ko: '외출·외근', es: 'Salida', shortKo: '외출', emoji: '🚗', badgeBg: 'bg-sky-100 text-sky-800 border-sky-200' },
+      meeting:  { ko: '회의·교육', es: 'Reunión', shortKo: '회의', emoji: '🎧', badgeBg: 'bg-violet-100 text-violet-800 border-violet-200' },
+      off:      { ko: '퇴근·출근전', es: 'Fuera', shortKo: '퇴근', emoji: '🌙', badgeBg: 'bg-slate-200 text-slate-700 border-slate-300' }
     };
 
+    const QUICK_STATUS_KEYS = ['working', 'break', 'meal', 'cooking', 'outing', 'off'];
+
     const WORK_LOCATIONS = [
-      { ko: '🏢 사무실', es: 'Oficina', val: '사무실 · Oficina' },
-      { ko: '🍳 부엌', es: 'Cocina', val: '부엌 · Cocina' },
-      { ko: '🌿 테라스', es: 'Terraza', val: '테라스 · Terraza' },
-      { ko: '🛏️ 내방', es: 'Mi cuarto', val: '내방 · Mi cuarto' },
-      { ko: '🧸 유아실', es: 'Sala infantil', val: '유아실 · Sala infantil' },
-      { ko: '📚 강의실', es: 'Salón de clases', val: '강의실 · Salón de clases' },
-      { ko: '🚪 옆사무실', es: 'Oficina de al lado', val: '옆사무실 · Oficina de al lado' }
+      { ko: '사무실', es: 'Oficina', emoji: '🏢', val: '사무실 · Oficina' },
+      { ko: '부엌', es: 'Cocina', emoji: '🍳', val: '부엌 · Cocina' },
+      { ko: '테라스', es: 'Terraza', emoji: '🌿', val: '테라스 · Terraza' },
+      { ko: '내방', es: 'Cuarto', emoji: '🛏️', val: '내방 · Mi cuarto' },
+      { ko: '유아실', es: 'Infantil', emoji: '🧸', val: '유아실 · Sala infantil' },
+      { ko: '강의실', es: 'Clase', emoji: '📚', val: '강의실 · Salón de clases' },
+      { ko: '옆사무실', es: 'Al lado', emoji: '🚪', val: '옆사무실 · Oficina de al lado' }
     ];
 
     const AVATARS = [
@@ -485,7 +487,7 @@
       if (act === 'RETURN_OFFICE') return '🏢 사무실 복귀 · Regreso a oficina';
       if (act === 'QUICK_BREAK') return '☕ 잠깐휴식 · Descanso rápido';
       if (stObj) {
-        return `${stObj.emoji} ${stObj.es}${row.reason ? ' (' + row.reason + ')' : ''}${row.bubble ? ' · "' + row.bubble + '"' : ''}`;
+        return `${stObj.emoji} ${stObj.ko} · ${stObj.es}${row.reason ? ' (' + row.reason + ')' : ''}${row.bubble ? ' · "' + row.bubble + '"' : ''}`;
       }
       return row.status || act || 'Actualización';
     }
@@ -494,6 +496,12 @@
       if (currentLang === 'ko') return ko;
       if (currentLang === 'es') return es;
       return `${ko} · ${es}`;
+    }
+
+    function tShortStatus(st) {
+      if (currentLang === 'ko') return st.shortKo;
+      if (currentLang === 'es') return st.es;
+      return `${st.shortKo} · ${st.es}`;
     }
 
     function formatDuration(sec) {
@@ -632,15 +640,15 @@
       });
     }
 
-    function requireAuthAndRun(memberId, actionType) {
+    function requireAuthAndRun(memberId, actionType, extraPayload = null) {
       const m = members.find(x => x.id === memberId);
       if (!m) return;
       const pinStr = String(m.pin || '').trim();
       if (!pinStr || unlockedMembers.has(memberId)) {
-        executeProtectedAction(memberId, actionType);
+        executeProtectedAction(memberId, actionType, extraPayload);
         return;
       }
-      pendingGateAction = { memberId, actionType };
+      pendingGateAction = { memberId, actionType, extraPayload };
       document.getElementById('pinGateTitle').textContent = `🔒 ${m.name} · 본인 확인`;
       document.getElementById('pinGateSub').textContent = '잠금 설정된 프로필입니다. 4자리 PIN을 입력해 주세요.';
       document.getElementById('pinGateInput').value = '';
@@ -651,14 +659,14 @@
 
     function confirmPinGate() {
       if (!pendingGateAction) return;
-      const { memberId, actionType } = pendingGateAction;
+      const { memberId, actionType, extraPayload } = pendingGateAction;
       const m = members.find(x => x.id === memberId);
       if (!m) return;
       const entered = document.getElementById('pinGateInput').value.trim();
       if (entered === String(m.pin).trim()) {
         unlockedMembers.add(memberId);
         closeModal('pinGateModal');
-        executeProtectedAction(memberId, actionType);
+        executeProtectedAction(memberId, actionType, extraPayload);
       } else {
         document.getElementById('pinGateError').textContent = '❌ PIN 번호가 일치하지 않습니다!';
         const card = document.getElementById('pinGateCard');
@@ -670,7 +678,7 @@
       }
     }
 
-    function executeProtectedAction(memberId, actionType) {
+    function executeProtectedAction(memberId, actionType, extraPayload = null) {
       if (actionType === 'status') {
         openStatusModalDirect(memberId);
       } else if (actionType === 'studio') {
@@ -679,7 +687,50 @@
         quickBackToOfficeDirect(memberId);
       } else if (actionType === 'quickBreak') {
         quickBreakDirect(memberId);
+      } else if (actionType === 'directStatus' && extraPayload) {
+        directSetStatus(memberId, extraPayload);
+      } else if (actionType === 'directLocation' && extraPayload) {
+        directSetWorkLocation(memberId, extraPayload);
       }
+    }
+
+    // Instant one-tap status change from right side of card
+    function directSetStatus(memberId, newStatus) {
+      const m = members.find(x => x.id === memberId);
+      if (!m || !STATUSES[newStatus]) return;
+      commitElapsedTime(m);
+      const qNow = getQuitoNow();
+      m.status = newStatus;
+      m.since = qNow.short;
+      m.returnTime = '';
+      if (newStatus === 'working') {
+        m.reason = m.reason && m.reason.includes('·') ? m.reason : '사무실 · Oficina';
+      } else {
+        m.reason = '';
+      }
+      localEditGuard[m.id] = Date.now() + 6000;
+      const st = STATUSES[newStatus];
+      pushLog(m, 'STATUS_CHANGE', `${st.emoji} ${st.ko} · ${st.es}${m.reason ? ' (' + m.reason + ')' : ''}`);
+      renderAll();
+      showToast(`${st.emoji} ${m.name}: ${t(st.ko, st.es)}`);
+      persistAndSync(m, 'STATUS_CHANGE');
+    }
+
+    // Instant one-tap work location change from right side of card
+    function directSetWorkLocation(memberId, locVal) {
+      const m = members.find(x => x.id === memberId);
+      if (!m) return;
+      commitElapsedTime(m);
+      const qNow = getQuitoNow();
+      m.status = 'working';
+      m.since = qNow.short;
+      m.reason = locVal;
+      m.returnTime = '';
+      localEditGuard[m.id] = Date.now() + 6000;
+      pushLog(m, 'STATUS_CHANGE', `💻 열일 중 · Trabajando (${locVal})`);
+      renderAll();
+      showToast(`📍 ${m.name}: ${locVal}`);
+      persistAndSync(m, 'STATUS_CHANGE');
     }
 
     function openPokeModal(memberId) {
@@ -1008,8 +1059,48 @@
           ? 'bg-rose-50/80 border-rose-400 border-dashed card-overdue'
           : th.card;
 
+        const rightQuickButtonsHtml = QUICK_STATUS_KEYS.map(key => {
+          const item = STATUSES[key];
+          const active = m.status === key;
+          return `
+            <button type="button"
+              onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'directStatus', '${key}')"
+              class="w-full px-1.5 py-1 rounded-xl border text-[10px] font-bold flex items-center gap-1 transition truncate ${
+                active
+                  ? 'bg-slate-800 text-white border-slate-900 shadow-2xs'
+                  : 'bg-white/90 hover:bg-amber-100/80 text-slate-700 border-slate-200/90'
+              }">
+              <span class="shrink-0">${item.emoji}</span>
+              <span class="truncate">${tShortStatus(item)}</span>
+            </button>
+          `;
+        }).join('');
+
+        const rightWorkLocationsHtml = m.status === 'working' ? `
+          <div class="mt-1.5 pt-1.5 border-t border-slate-200/70 space-y-1">
+            <div class="text-[9px] font-bold text-emerald-800 px-0.5 truncate">📍 ${t('장소', 'Lugar')}</div>
+            <div class="grid grid-cols-1 gap-0.5 max-h-28 overflow-y-auto no-scrollbar">
+              ${WORK_LOCATIONS.map(loc => {
+                const isLocActive = m.reason === loc.val || (!m.reason && loc.val === '사무실 · Oficina');
+                return `
+                  <button type="button"
+                    onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'directLocation', '${loc.val}')"
+                    class="w-full px-1.5 py-0.5 rounded-lg border text-[9px] font-bold flex items-center gap-1 transition truncate ${
+                      isLocActive
+                        ? 'bg-emerald-600 text-white border-emerald-700'
+                        : 'bg-white/80 hover:bg-emerald-100/80 text-emerald-900 border-emerald-200/70'
+                    }">
+                    <span class="shrink-0">${loc.emoji}</span>
+                    <span class="truncate">${t(loc.ko, loc.es)}</span>
+                  </button>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        ` : '';
+
         return `
-          <div class="relative rounded-3xl border-2 ${cardBorderClass} p-3.5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group min-w-0">
+          <div class="relative rounded-3xl border-2 ${cardBorderClass} p-3 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group min-w-0">
             ${poke ? `
               <div class="mb-2 px-2.5 py-1 rounded-xl bg-amber-300/95 text-slate-900 text-[11px] font-bold flex items-center justify-between gap-1.5 shadow-2xs">
                 <span class="truncate">📣 ${escapeHtml(poke.from)}님이 호출함! (${poke.time})</span>
@@ -1024,7 +1115,7 @@
               </div>
             ` : ''}
 
-            <div class="flex items-center justify-between gap-1.5 mb-2.5">
+            <div class="flex items-center justify-between gap-1 mb-2">
               <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold border ${st.badgeBg} truncate">
                 <span>${st.emoji}</span>
                 <span class="truncate">${t(st.ko, st.es)}</span>
@@ -1038,35 +1129,46 @@
               </div>
             </div>
 
-            <div onclick="requireAuthAndRun('${m.id}', 'status')" class="cursor-pointer flex items-center gap-2.5 mb-2.5">
-              <div onclick="event.stopPropagation(); petAvatar(this)" class="relative w-16 h-16 rounded-2xl ${th.avatarBg} border-2 border-white shadow-xs flex items-center justify-center shrink-0 p-1 cursor-pointer hover:scale-105 transition-transform">
-                <div class="w-full h-full anim-float">
-                  ${renderAvatarSVG(m.avatar, m.status, m.accessory, overdue.isOverdue)}
+            <!-- Left Info + Right Quick Action Column -->
+            <div class="flex items-start gap-2 mb-2 min-w-0">
+              <div onclick="requireAuthAndRun('${m.id}', 'status')" class="cursor-pointer flex-1 min-w-0 space-y-2">
+                <div class="flex items-center gap-2">
+                  <div onclick="event.stopPropagation(); petAvatar(this)" class="relative w-14 h-14 rounded-2xl ${th.avatarBg} border-2 border-white shadow-xs flex items-center justify-center shrink-0 p-1 cursor-pointer hover:scale-105 transition-transform">
+                    <div class="w-full h-full anim-float">
+                      ${renderAvatarSVG(m.avatar, m.status, m.accessory, overdue.isOverdue)}
+                    </div>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <h3 class="text-sm font-bold text-slate-800 truncate">${escapeHtml(m.name)}</h3>
+                    <p class="text-[10px] text-slate-500 font-medium truncate">${escapeHtml(m.role || 'Equipo Quito')}</p>
+                    <div class="text-[10px] font-semibold text-slate-600 flex items-center gap-1 flex-wrap mt-0.5">
+                      <span>🕒 ${cleanSince} ~</span>
+                      ${m.status === 'outing' && cleanReturn ? `<span class="px-1 py-0.5 rounded-md bg-sky-100 text-sky-800 font-bold">복귀 ${cleanReturn}</span>` : ''}
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              <div class="min-w-0 flex-1">
-                <h3 class="text-sm font-bold text-slate-800 truncate">${escapeHtml(m.name)}</h3>
-                <p class="text-[11px] text-slate-500 font-medium truncate mb-1">${escapeHtml(m.role || 'Equipo Quito')}</p>
-                <div class="text-[11px] font-semibold text-slate-600 flex items-center gap-1 flex-wrap">
-                  <span>🕒 ${cleanSince} ~</span>
-                  ${m.status === 'outing' && cleanReturn ? `<span class="px-1.5 py-0.5 rounded-md bg-sky-100 text-sky-800 font-bold">복귀 ${cleanReturn}</span>` : ''}
-                </div>
                 ${m.status === 'working' ? `
-                  <div class="mt-1 text-[11px] font-bold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-lg truncate">
+                  <div class="text-[10px] font-bold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-lg truncate">
                     📍 ${escapeHtml(workLocText)}
                   </div>
                 ` : ''}
                 ${m.status === 'outing' && m.reason ? `
-                  <div class="mt-1 text-[11px] font-bold text-sky-800 bg-sky-100/80 px-2 py-0.5 rounded-lg truncate">
+                  <div class="text-[10px] font-bold text-sky-800 bg-sky-100/80 px-2 py-0.5 rounded-lg truncate">
                     📍 ${escapeHtml(m.reason)}
                   </div>
                 ` : ''}
                 ${m.bubble ? `
-                  <div class="mt-1 inline-block max-w-full bg-white/95 border border-slate-200/80 rounded-xl px-2 py-0.5 text-[11px] font-semibold text-slate-700 shadow-2xs truncate">
+                  <div class="inline-block max-w-full bg-white/95 border border-slate-200/80 rounded-xl px-2 py-0.5 text-[10px] font-semibold text-slate-700 shadow-2xs truncate">
                     💬 ${escapeHtml(m.bubble)}
                   </div>
                 ` : ''}
+              </div>
+
+              <!-- Right Quick Status & Location Rail -->
+              <div class="w-[84px] shrink-0 bg-white/75 rounded-2xl p-1.5 border border-slate-200/80 space-y-1">
+                ${rightQuickButtonsHtml}
+                ${rightWorkLocationsHtml}
               </div>
             </div>
 
