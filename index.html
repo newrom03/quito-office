@@ -42,11 +42,16 @@
       25% { transform: translateX(-6px); }
       75% { transform: translateX(6px); }
     }
+    @keyframes pulseBorder {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.35); }
+      50% { box-shadow: 0 0 0 6px rgba(244, 63, 94, 0.1); }
+    }
     .anim-float { animation: floatSlow 3s ease-in-out infinite; }
     .anim-squish { animation: squishPop 0.45s ease-out; }
     .anim-steam { animation: steamRise 1.8s ease-in-out infinite; }
     .anim-zzz { animation: zzzFloat 2.2s ease-in-out infinite; }
     .anim-shake { animation: shakeX 0.3s ease-in-out; }
+    .card-overdue { animation: pulseBorder 2s infinite; }
     .heart-pop {
       position: absolute;
       left: 50%;
@@ -122,7 +127,7 @@
       <div class="w-full lg:flex-1 space-y-4 min-w-0">
         <div class="bg-white/90 border border-amber-200/80 rounded-2xl px-4 py-3 flex flex-wrap items-center justify-between gap-2 shadow-sm">
           <div class="text-xs sm:text-sm font-semibold text-slate-700">
-            📊 본인 카드를 클릭해 상태를 바꾸고, 아바타를 톡톡 쓰다듬어 보세요 💕 · Haz clic en tu tarjeta
+            📊 카드를 눌러 상태를 변경하고, 장시간 미업데이트 동료는 <span class="text-rose-600 font-bold">[👉 콕 찌르기]</span>로 호출해 보세요!
           </div>
           <div class="text-xs font-bold text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200" id="activeFilterLabel">
             전체 팀원 (0)
@@ -138,7 +143,7 @@
           <div class="flex items-center justify-between mb-3 pb-2.5 border-b border-slate-100">
             <div>
               <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">🔔 실시간 팀 이동 피드</h2>
-              <p class="text-[11px] text-slate-500 font-medium">매일 아침 자동 리셋 · Quito (UTC-5)</p>
+              <p class="text-[11px] text-slate-500 font-medium">초과 경보 & 콕 찌르기 · Quito (UTC-5)</p>
             </div>
             <div class="flex items-center gap-1.5">
               <button type="button" onclick="manualSync(true)" title="피드 새로고침" class="p-1 rounded-full hover:bg-slate-100 text-xs">🔄</button>
@@ -154,6 +159,20 @@
 
   <!-- Toast -->
   <div id="toast" class="fixed top-20 left-1/2 -translate-x-1/2 z-[60] pointer-events-none hidden bg-slate-900 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-lg"></div>
+
+  <!-- Poke Modal -->
+  <div id="pokeModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border-2 border-amber-300 text-center">
+      <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-amber-100 text-3xl flex items-center justify-center">👉🦙</div>
+      <h3 class="text-lg font-bold text-slate-800" id="pokeModalTitle">동료 콕 찌르기</h3>
+      <p class="text-xs text-slate-500 mt-1 mb-4">카드에 위치 확인 알림 배너를 띄우고 텔레그램 단체방으로 호출합니다.</p>
+      <input type="text" id="pokeSenderInput" placeholder="보내는 사람 이름 (예: Miguel)" class="w-full px-3.5 py-2.5 rounded-2xl border-2 border-amber-200 focus:border-amber-500 focus:outline-none text-xs font-bold text-center mb-4">
+      <div class="flex items-center justify-center gap-2">
+        <button type="button" onclick="closeModal('pokeModal')" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">취소</button>
+        <button type="button" onclick="submitPoke()" class="px-5 py-2 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-900 text-xs font-bold shadow-sm">📣 호출 보내기!</button>
+      </div>
+    </div>
+  </div>
 
   <!-- PIN Gatekeeper Modal -->
   <div id="pinGateModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
@@ -187,13 +206,11 @@
         <button type="button" onclick="closeModal('statusModal')" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold">✕</button>
       </div>
 
-      <!-- Status Grid -->
       <div class="mb-4">
         <label class="block text-xs font-bold text-slate-600 mb-2">상태 선택 · Seleccionar estado</label>
         <div id="statusButtonsGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
       </div>
 
-      <!-- Outing Extra Fields -->
       <div id="outingFields" class="hidden mb-4 p-3.5 rounded-2xl bg-sky-50/80 border border-sky-200 space-y-2.5">
         <label class="block text-xs font-bold text-sky-900">외출 사유 · Motivo de salida</label>
         <div class="flex flex-wrap gap-1.5" id="reasonChips"></div>
@@ -203,7 +220,6 @@
         </div>
       </div>
 
-      <!-- Speech Bubble Quick Chips -->
       <div class="mb-4">
         <label class="block text-xs font-bold text-slate-600 mb-1.5">한마디 / 말풍선 메모 (선택) · Nota rápida</label>
         <div class="flex flex-wrap gap-1.5 mb-2" id="bubbleChips"></div>
@@ -296,6 +312,7 @@
     let currentLang = localStorage.getItem('quito_lang') || 'both';
     let currentFilter = 'all';
     let selectedMemberId = null;
+    let pokeTargetMemberId = null;
     let selectedStatusInModal = 'working';
     let studioMode = 'edit';
     let studioDraft = { avatar: 'alpaca', accessory: 'none', theme: 'amber' };
@@ -303,8 +320,7 @@
     const unlockedMembers = new Set();
     let pendingGateAction = null;
     let isSyncingNow = false;
-    // Track recent local writes so background polling never overwrites fresh edits
-    const localEditGuard = {}; // memberId -> timestamp
+    const localEditGuard = {};
 
     const STATUSES = {
       working:  { ko: '열일 중', es: 'Trabajando', emoji: '💻', badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
@@ -371,8 +387,8 @@
       { ko: '금방 돌아옵니다 🏃', es: 'Vuelvo enseguida 🏃' }
     ];
 
-    let members = JSON.parse(localStorage.getItem('quito_members_v6') || '[]');
-    let activityLogs = JSON.parse(localStorage.getItem('quito_logs_v6') || '[]');
+    let members = JSON.parse(localStorage.getItem('quito_members_v7') || '[]');
+    let activityLogs = JSON.parse(localStorage.getItem('quito_logs_v7') || '[]');
 
     function getQuitoNow() {
       const now = new Date();
@@ -415,6 +431,7 @@
     function formatSheetLogDetail(row) {
       const act = String(row.action_type || '');
       const stObj = STATUSES[row.status];
+      if (act === 'POKE') return `👉 ${row.reason || '동료'}님이 위치 확인 호출!`;
       if (act === 'DAILY_RESET') return '🌅 일일 자동 초기화 · Reinicio diario';
       if (act === 'ADD_MEMBER') return '➕ 새 팀원 등록 · Nuevo integrante';
       if (act === 'UPDATE_AVATAR') return `🎨 프로필 꾸미기 · ${row.avatar_config || ''}`;
@@ -440,7 +457,7 @@
     }
 
     function emptyTotals() {
-      return { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0, dayKey: getQuitoNow().dayKey };
+      return { working: 0, break: 0, meal: 0, cooking: 0, outing: 0, meeting: 0, dayKey: getQuitoNow().dayKey, streak: 1 };
     }
 
     function parseTotalsFromSheet(rawJson, fallbackTotals) {
@@ -454,8 +471,9 @@
         }
       }
       const candidate = parsed || fallbackTotals || emptyTotals();
+      const prevStreak = Number(candidate.streak) || 1;
       if (candidate.dayKey && candidate.dayKey !== todayKey) {
-        return emptyTotals();
+        return { ...emptyTotals(), streak: prevStreak + 1 };
       }
       return {
         working: Number(candidate.working) || 0,
@@ -464,11 +482,11 @@
         cooking: Number(candidate.cooking) || 0,
         outing: Number(candidate.outing) || 0,
         meeting: Number(candidate.meeting) || 0,
-        dayKey: todayKey
+        dayKey: todayKey,
+        streak: prevStreak
       };
     }
 
-    // Parse updatedAt safely (handles numeric epoch ms or ISO string from sheet)
     function parseTimestampMs(val) {
       if (!val) return 0;
       const num = Number(val);
@@ -477,10 +495,57 @@
       return !isNaN(d.getTime()) ? d.getTime() : 0;
     }
 
+    // Gamification: Detect if member forgot to update status or passed return time
+    function getOverdueState(m) {
+      if (!m || m.status === 'off') return { isOverdue: false, label: '' };
+      const ts = parseTimestampMs(m.updatedAt);
+      if (ts <= 0) return { isOverdue: false, label: '' };
+
+      const elapsedMin = Math.floor((Date.now() - ts) / 60000);
+      const qShort = getQuitoNow().short;
+      const nowParts = qShort.split(':');
+      const nowMinOfDay = Number(nowParts[0]) * 60 + Number(nowParts[1]);
+
+      if (m.status === 'outing' && m.returnTime) {
+        const cleanRet = formatCleanTime(m.returnTime);
+        const rParts = cleanRet.match(/(\d{1,2}):(\d{2})/);
+        if (rParts) {
+          const retMinOfDay = Number(rParts[1]) * 60 + Number(rParts[2]);
+          if (nowMinOfDay > retMinOfDay + 5) {
+            return { isOverdue: true, label: t(`복귀시간 +${nowMinOfDay - retMinOfDay}분 초과!`, `Retraso +${nowMinOfDay - retMinOfDay}m`) };
+          }
+        }
+      }
+      if (m.status === 'break' && elapsedMin >= 40) {
+        return { isOverdue: true, label: t(`휴식 ${elapsedMin}분 경과`, `Descanso ${elapsedMin}m`) };
+      }
+      if (m.status === 'meal' && elapsedMin >= 90) {
+        return { isOverdue: true, label: t(`식사 ${elapsedMin}분 경과`, `Almuerzo ${elapsedMin}m`) };
+      }
+      if (m.status === 'cooking' && elapsedMin >= 60) {
+        return { isOverdue: true, label: t(`요리 ${elapsedMin}분 경과`, `Cocinando ${elapsedMin}m`) };
+      }
+      if (elapsedMin >= 180) {
+        return { isOverdue: true, label: t(`${Math.floor(elapsedMin / 60)}시간째 미변경`, `Sin actualizar ${Math.floor(elapsedMin / 60)}h`) };
+      }
+      return { isOverdue: false, label: '' };
+    }
+
+    function parsePokeInfo(raw) {
+      if (!raw) return null;
+      try {
+        const obj = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        if (obj && obj.from && (Date.now() - Number(obj.ts || 0) < 3600000)) {
+          return obj;
+        }
+      } catch (e) {}
+      return null;
+    }
+
     function getLiveTotals(m) {
       const todayKey = getQuitoNow().dayKey;
       if (m.totals && m.totals.dayKey && m.totals.dayKey !== todayKey) {
-        m.totals = emptyTotals();
+        m.totals = { ...emptyTotals(), streak: (Number(m.totals.streak) || 1) + 1 };
       }
       const base = { ...emptyTotals(), ...(m.totals || {}) };
       const ts = parseTimestampMs(m.updatedAt);
@@ -496,7 +561,8 @@
     function commitElapsedTime(m) {
       const todayKey = getQuitoNow().dayKey;
       if (!m.totals || (m.totals.dayKey && m.totals.dayKey !== todayKey)) {
-        m.totals = emptyTotals();
+        const prevStreak = m.totals ? (Number(m.totals.streak) || 1) : 1;
+        m.totals = { ...emptyTotals(), streak: prevStreak + 1 };
       }
       m.totals.dayKey = todayKey;
       const ts = parseTimestampMs(m.updatedAt);
@@ -507,10 +573,11 @@
         }
       }
       m.updatedAt = Date.now();
+      m.poke_info = ''; // Clear poke alert once owner updates status
     }
 
     function isAnyModalOpen() {
-      return ['statusModal', 'avatarModal', 'pinGateModal', 'sheetsModal'].some(id => {
+      return ['statusModal', 'avatarModal', 'pinGateModal', 'sheetsModal', 'pokeModal'].some(id => {
         const el = document.getElementById(id);
         return el && !el.classList.contains('hidden');
       });
@@ -526,7 +593,7 @@
       }
       pendingGateAction = { memberId, actionType };
       document.getElementById('pinGateTitle').textContent = `🔒 ${m.name} · 본인 확인`;
-      document.getElementById('pinGateSub').textContent = '잠금 설정된 카드입니다. 4자리 PIN을 입력해 주세요.';
+      document.getElementById('pinGateSub').textContent = '잠금 설정된 프로필입니다. 4자리 PIN을 입력해 주세요.';
       document.getElementById('pinGateInput').value = '';
       document.getElementById('pinGateError').textContent = '';
       openModal('pinGateModal');
@@ -564,7 +631,42 @@
       }
     }
 
-    function renderAvatarSVG(avatarId, status = 'working', accessory = 'none') {
+    function openPokeModal(memberId) {
+      const m = members.find(x => x.id === memberId);
+      if (!m) return;
+      pokeTargetMemberId = memberId;
+      document.getElementById('pokeModalTitle').textContent = `👉 ${m.name}님 콕 찌르기`;
+      document.getElementById('pokeSenderInput').value = localStorage.getItem('quito_my_name') || '';
+      openModal('pokeModal');
+      setTimeout(() => document.getElementById('pokeSenderInput').focus(), 80);
+    }
+
+    async function submitPoke() {
+      const m = members.find(x => x.id === pokeTargetMemberId);
+      if (!m) return;
+      const fromName = document.getElementById('pokeSenderInput').value.trim() || '동료';
+      localStorage.setItem('quito_my_name', fromName);
+      const qNow = getQuitoNow();
+
+      m.poke_info = JSON.stringify({ from: fromName, time: qNow.short, ts: Date.now() });
+      localEditGuard[m.id] = Date.now();
+      pushLog(m, 'POKE', `👉 ${fromName}님이 위치 확인 호출!`);
+      closeModal('pokeModal');
+      renderAll();
+      showToast(`📣 ${m.name}님에게 콕 찌르기 알림을 보냈습니다!`);
+
+      if (gasUrl) {
+        try {
+          await fetch(gasUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify({ action: 'pokeMember', id: m.id, fromName })
+          });
+        } catch (e) {}
+      }
+    }
+
+    function renderAvatarSVG(avatarId, status = 'working', accessory = 'none', isOverdue = false) {
       const isSleeping = status === 'off';
       const isCooking = status === 'cooking';
       const isOuting = status === 'outing';
@@ -647,6 +749,13 @@
           <path d="M35 51 Q40 55 45 51" stroke="#1e293b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
           <path d="M55 51 Q60 55 65 51" stroke="#1e293b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
           <text x="72" y="32" font-size="12" font-weight="bold" fill="#6366f1" class="anim-zzz">Zzz</text>
+        `;
+      } else if (isOverdue) {
+        eyesSvg = `
+          <circle cx="40" cy="50" r="4" fill="#ffffff" stroke="#e11d48" stroke-width="2"/>
+          <circle cx="60" cy="50" r="4" fill="#ffffff" stroke="#e11d48" stroke-width="2"/>
+          <path d="M44 64 Q50 59 56 64" stroke="#e11d48" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <text x="70" y="28" font-size="16">🕸️</text>
         `;
       } else if (isOuting) {
         eyesSvg = `
@@ -786,7 +895,6 @@
           <div class="col-span-full bg-white/90 border-2 border-dashed border-amber-300 rounded-3xl p-10 text-center space-y-3">
             <div class="text-4xl">🦙✨</div>
             <h3 class="text-base font-bold text-slate-800">${t('등록된 팀원이 없습니다 · No hay integrantes aún', 'No hay integrantes aún')}</h3>
-            <p class="text-xs text-slate-500">${t('상단의 [➕ 팀원 추가] 버튼을 눌러 팀원을 등록하고 캐릭터를 꾸며보세요!', 'Haz clic en [➕ 팀원 추가] para agregar al equipo.')}</p>
             <button type="button" onclick="openAddMemberModal()" class="px-4 py-2 rounded-full bg-amber-400 hover:bg-amber-500 text-slate-900 text-xs font-bold shadow-xs">
               ➕ 첫 팀원 등록하기 · Agregar integrante
             </button>
@@ -806,15 +914,37 @@
         const cleanReturn = formatCleanTime(m.returnTime);
         const hasPin = String(m.pin || '').trim().length > 0;
         const isUnlocked = unlockedMembers.has(m.id);
+        const overdue = getOverdueState(m);
+        const poke = parsePokeInfo(m.poke_info);
+        const streak = Number(totals.streak) || 1;
+
+        const cardBorderClass = overdue.isOverdue
+          ? 'bg-rose-50/80 border-rose-400 border-dashed card-overdue'
+          : th.card;
 
         return `
-          <div class="relative rounded-3xl border-2 ${th.card} p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
+          <div class="relative rounded-3xl border-2 ${cardBorderClass} p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
+            ${poke ? `
+              <div class="mb-2.5 px-3 py-1.5 rounded-xl bg-amber-300/90 text-slate-900 text-[11px] font-bold flex items-center justify-between gap-1 animate-bounce">
+                <span>📣 ${escapeHtml(poke.from)}님이 호출함! (${poke.time})</span>
+                <span>👀</span>
+              </div>
+            ` : ''}
+
+            ${overdue.isOverdue ? `
+              <div class="mb-2.5 px-3 py-1 rounded-xl bg-rose-600 text-white text-[11px] font-bold flex items-center justify-between">
+                <span>⚠️ ${overdue.label}</span>
+                <span>❓</span>
+              </div>
+            ` : ''}
+
             <div class="flex items-center justify-between gap-2 mb-3">
               <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${st.badgeBg}">
                 <span>${st.emoji}</span>
                 <span>${t(st.ko, st.es)}</span>
               </span>
               <div class="flex items-center gap-1">
+                ${streak >= 2 ? `<span title="연속 체크 스트릭" class="text-[10px] px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-200 font-bold">🔥${streak}일</span>` : ''}
                 ${hasPin ? `<span title="${isUnlocked ? '인증됨' : 'PIN 잠금'}" class="text-xs px-2 py-0.5 rounded-full bg-white/90 border border-slate-200/80 ${isUnlocked ? 'text-emerald-600' : 'text-rose-600'} font-bold">${isUnlocked ? '🔓' : '🔒'}</span>` : ''}
                 <button type="button" onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'studio')" title="캐릭터·프로필 꾸미기" class="w-8 h-8 rounded-full bg-white/90 hover:bg-violet-100 text-slate-700 border border-slate-200/80 flex items-center justify-center text-sm shadow-2xs transition">
                   🎨
@@ -825,7 +955,7 @@
             <div onclick="requireAuthAndRun('${m.id}', 'status')" class="cursor-pointer flex items-center gap-3.5 mb-3">
               <div onclick="event.stopPropagation(); petAvatar(this)" class="relative w-20 h-20 rounded-2xl ${th.avatarBg} border-2 border-white shadow-xs flex items-center justify-center shrink-0 p-1.5 cursor-pointer hover:scale-105 transition-transform">
                 <div class="w-full h-full anim-float">
-                  ${renderAvatarSVG(m.avatar, m.status, m.accessory)}
+                  ${renderAvatarSVG(m.avatar, m.status, m.accessory, overdue.isOverdue)}
                 </div>
               </div>
 
@@ -867,16 +997,19 @@
               </div>
             </div>
 
-            <div class="mt-2.5 flex items-center gap-2">
+            <div class="mt-2.5 flex items-center gap-1.5">
               ${m.status !== 'working' ? `
-                <button type="button" onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'quickReturn')" class="flex-1 py-1.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-2xs transition">
-                  🏢 ${t('사무실 복귀! (출근)', 'Volver a oficina')}
+                <button type="button" onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'quickReturn')" class="flex-1 py-1.5 px-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-2xs transition">
+                  🏢 ${t('사무실 복귀!', 'Volver')}
                 </button>
               ` : `
-                <button type="button" onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'status')" class="flex-1 py-1.5 px-3 rounded-xl bg-white hover:bg-amber-100/70 text-slate-700 border border-slate-200 text-xs font-bold transition">
-                  ${hasPin && !isUnlocked ? '🔒' : '✨'} ${t('상태 변경', 'Cambiar estado')}
+                <button type="button" onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'status')" class="flex-1 py-1.5 px-2.5 rounded-xl bg-white hover:bg-amber-100/70 text-slate-700 border border-slate-200 text-xs font-bold transition">
+                  ${hasPin && !isUnlocked ? '🔒' : '✨'} ${t('상태 변경', 'Cambiar')}
                 </button>
               `}
+              <button type="button" onclick="event.stopPropagation(); openPokeModal('${m.id}')" title="위치 확인 호출 보내기" class="py-1.5 px-2.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 text-xs font-bold transition shrink-0">
+                👉 콕 찌르기
+              </button>
             </div>
           </div>
         `;
@@ -1008,7 +1141,6 @@
       m.returnTime = selectedStatusInModal === 'outing' ? document.getElementById('inputReturnTime').value : '';
       m.bubble = document.getElementById('inputBubble').value.trim();
 
-      // Guard against accidental double-tap on the newly rendered "Volver a oficina" button underneath modal
       localEditGuard[m.id] = Date.now();
 
       const st = STATUSES[m.status];
@@ -1021,7 +1153,6 @@
     }
 
     function quickBackToOfficeDirect(memberId) {
-      // Prevent accidental click within 1.8s right after closing modal
       if (localEditGuard[memberId] && (Date.now() - localEditGuard[memberId] < 1800)) {
         return;
       }
@@ -1069,7 +1200,8 @@
 
     function resetAllTimers() {
       members.forEach(m => {
-        m.totals = emptyTotals();
+        const prevStreak = m.totals ? (Number(m.totals.streak) || 1) : 1;
+        m.totals = { ...emptyTotals(), streak: prevStreak };
         m.updatedAt = Date.now();
         localEditGuard[m.id] = Date.now();
       });
@@ -1184,6 +1316,7 @@
           since: qNow.short,
           updatedAt: Date.now(),
           pin,
+          poke_info: '',
           totals: emptyTotals()
         };
         if (pin) unlockedMembers.add(newId);
@@ -1234,13 +1367,13 @@
     }
 
     function saveLocal() {
-      localStorage.setItem('quito_members_v6', JSON.stringify(members));
-      localStorage.setItem('quito_logs_v6', JSON.stringify(activityLogs));
+      localStorage.setItem('quito_members_v7', JSON.stringify(members));
+      localStorage.setItem('quito_logs_v7', JSON.stringify(activityLogs));
     }
 
     function clearLocalCache() {
-      localStorage.removeItem('quito_members_v6');
-      localStorage.removeItem('quito_logs_v6');
+      localStorage.removeItem('quito_members_v7');
+      localStorage.removeItem('quito_logs_v7');
       members = [];
       activityLogs = [];
       unlockedMembers.clear();
@@ -1330,7 +1463,8 @@
         since: formatCleanTime(m.since) || '08:30',
         updatedAt: parseTimestampMs(m.updatedAt) || Date.now(),
         pin: m.pin || '',
-        totals_json: JSON.stringify(todayTotals)
+        totals_json: JSON.stringify(todayTotals),
+        poke_info: m.poke_info || ''
       };
     }
 
@@ -1348,11 +1482,9 @@
           members = json.members.map(row => {
             const prev = oldMap[row.id] || {};
             const guardTs = localEditGuard[row.id] || 0;
-            // Keep fresh local edit if saved within last 5 seconds
             if (guardTs && (Date.now() - guardTs < 5000) && prev.id) {
               return prev;
             }
-            // Sheet is the single source of truth for updatedAt & totals_json!
             const sheetTs = parseTimestampMs(row.updatedAt);
             const fallbackTs = parseTimestampMs(prev.updatedAt) || Date.now();
             const mergedTotals = parseTotalsFromSheet(row.totals_json, prev.totals);
@@ -1363,7 +1495,8 @@
               since: formatCleanTime(row.since) || '08:30',
               returnTime: formatCleanTime(row.returnTime) || '',
               updatedAt: sheetTs > 0 ? sheetTs : fallbackTs,
-              totals: mergedTotals
+              totals: mergedTotals,
+              poke_info: row.poke_info || ''
             };
           });
           if (Array.isArray(json.logs) && json.logs.length > 0) {
