@@ -128,7 +128,7 @@
   <main class="max-w-[1760px] mx-auto px-3 sm:px-4 pt-4">
     <div id="mainLayout" class="flex flex-col lg:flex-row items-start gap-4">
       <div class="w-full lg:flex-1 space-y-3.5 min-w-0">
-        <div class="bg-white/90 border border-amber-200/80 rounded-2xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 shadow-sm">
+        <div id="boardGuideBanner" class="bg-white/90 border border-amber-200/80 rounded-2xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 shadow-sm">
           <div class="text-xs sm:text-sm font-semibold text-slate-700">
             📊 가로 상태 버튼으로 <span class="text-emerald-700 font-bold">[열일·장소]</span>, <span class="text-amber-700 font-bold">[휴식·식사·요리]</span>, <span class="text-sky-700 font-bold">[외출·사유]</span>를 바로 누르거나 <span class="text-rose-600 font-bold">[👉 콕]</span>으로 호출해 보세요!
           </div>
@@ -477,6 +477,8 @@
       const adminBtn = document.getElementById('mode-admin');
       const adminControls = document.getElementById('adminControlsGroup');
       const feedAside = document.getElementById('activityFeedAside');
+      const filterBar = document.getElementById('filterBar');
+      const guideBanner = document.getElementById('boardGuideBanner');
 
       if (userBtn && adminBtn) {
         userBtn.className = !isAdmin
@@ -494,6 +496,16 @@
 
       if (feedAside) {
         feedAside.classList.toggle('hidden', !isAdmin);
+      }
+
+      if (filterBar) {
+        filterBar.classList.toggle('hidden', !isAdmin);
+        filterBar.classList.toggle('flex', isAdmin);
+      }
+
+      if (guideBanner) {
+        guideBanner.classList.toggle('hidden', !isAdmin);
+        guideBanner.classList.toggle('flex', isAdmin);
       }
     }
 
@@ -528,6 +540,17 @@
       return str;
     }
 
+    function formatWorkLocationLabel(rawReason) {
+      const clean = String(rawReason || '').trim();
+      if (!clean) return t('사무실 · Oficina', 'Oficina');
+      if (clean.includes('·')) {
+        const parts = clean.split('·').map(s => s.trim()).filter(Boolean);
+        const deduped = Array.from(new Set(parts));
+        return deduped.join(' · ');
+      }
+      return clean;
+    }
+
     function extractShortTimeFromTimestamp(ts) {
       if (!ts) return '';
       const str = String(ts).trim();
@@ -545,7 +568,7 @@
       if (act === 'RETURN_OFFICE') return '🏢 사무실 복귀 · Regreso a oficina';
       if (act === 'QUICK_BREAK') return '☕ 잠깐휴식 · Descanso rápido';
       if (stObj) {
-        return `${stObj.emoji} ${stObj.ko} · ${stObj.es}${row.reason ? ' (' + row.reason + ')' : ''}${row.bubble ? ' · "' + row.bubble + '"' : ''}`;
+        return `${stObj.emoji} ${stObj.ko} · ${stObj.es}${row.reason ? ' (' + formatWorkLocationLabel(row.reason) + ')' : ''}${row.bubble ? ' · "' + row.bubble + '"' : ''}`;
       }
       return row.status || act || 'Actualización';
     }
@@ -763,7 +786,7 @@
       if (!m) return;
       popupTargetMemberId = memberId;
       document.getElementById('locationModalTitle').textContent = `📍 ${m.name} · 작업 장소 선택`;
-      const defaultLoc = m.status === 'working' && m.reason ? m.reason : '사무실 · Oficina';
+      const defaultLoc = m.status === 'working' && m.reason ? formatWorkLocationLabel(m.reason) : '사무실 · Oficina';
       document.getElementById('locationPopupInput').value = defaultLoc;
       renderLocationPopupChips();
       openModal('locationModal');
@@ -788,7 +811,7 @@
     function confirmLocationPopup() {
       const m = members.find(x => x.id === popupTargetMemberId);
       if (!m) return;
-      const locVal = document.getElementById('locationPopupInput').value.trim() || '사무실 · Oficina';
+      const locVal = formatWorkLocationLabel(document.getElementById('locationPopupInput').value.trim() || '사무실 · Oficina');
       commitElapsedTime(m);
       const qNow = getQuitoNow();
       m.status = 'working';
@@ -1180,7 +1203,7 @@
         const overdue = getOverdueState(m);
         const poke = parsePokeInfo(m.poke_info);
         const streak = Number(totals.streak) || 1;
-        const workLocText = m.status === 'working' ? (m.reason || t('사무실 · Oficina', 'Oficina')) : '';
+        const workLocText = m.status === 'working' ? formatWorkLocationLabel(m.reason) : '';
 
         const cardBorderClass = overdue.isOverdue
           ? 'bg-rose-50/80 border-rose-400 border-dashed card-overdue'
@@ -1373,7 +1396,7 @@
         <span class="px-2 py-0.5 rounded-md bg-sky-50 text-sky-700">🚗 외출 ${formatDuration(totals.outing)}</span>
       `;
 
-      document.getElementById('inputWorkLocation').value = m.status === 'working' ? (m.reason || '사무실 · Oficina') : '사무실 · Oficina';
+      document.getElementById('inputWorkLocation').value = m.status === 'working' ? formatWorkLocationLabel(m.reason) : '사무실 · Oficina';
       document.getElementById('inputReason').value = m.status === 'outing' ? (m.reason || '') : '';
       document.getElementById('inputReturnTime').value = formatCleanTime(m.returnTime) || '';
       document.getElementById('inputBubble').value = m.bubble || '';
@@ -1458,7 +1481,7 @@
       m.since = qNow.short;
 
       if (selectedStatusInModal === 'working') {
-        m.reason = document.getElementById('inputWorkLocation').value.trim() || '사무실 · Oficina';
+        m.reason = formatWorkLocationLabel(document.getElementById('inputWorkLocation').value.trim() || '사무실 · Oficina');
         m.returnTime = '';
       } else if (selectedStatusInModal === 'outing') {
         m.reason = document.getElementById('inputReason').value.trim();
@@ -1782,7 +1805,7 @@
         accessory: m.accessory || 'none',
         theme: m.theme || 'amber',
         status: m.status || 'working',
-        reason: m.reason || '',
+        reason: m.reason ? formatWorkLocationLabel(m.reason) : '',
         returnTime: formatCleanTime(m.returnTime) || '',
         bubble: m.bubble || '',
         since: formatCleanTime(m.since) || '08:30',
@@ -1884,7 +1907,7 @@
         const st = STATUSES[m.status] || STATUSES.working;
         const tot = getLiveTotals(m);
         let extra = '';
-        if (m.status === 'working' && m.reason) extra += ` · 📍 ${m.reason}`;
+        if (m.status === 'working' && m.reason) extra += ` · 📍 ${formatWorkLocationLabel(m.reason)}`;
         if (m.status === 'outing' && m.reason) extra += ` · 📍 ${m.reason}`;
         if (m.status === 'outing' && m.returnTime) extra += ` (Regreso ${formatCleanTime(m.returnTime)})`;
         lines.push(`${st.emoji} *${m.name}*: ${st.es}${extra} [💼${formatDuration(tot.working)} / ☕${formatDuration(tot.break)} / 🍱${formatDuration(tot.meal)} / 🍳${formatDuration(tot.cooking)}]`);
