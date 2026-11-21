@@ -565,7 +565,7 @@
       if (act === 'ADD_MEMBER') return '➕ 새 팀원 등록 · Nuevo integrante';
       if (act === 'UPDATE_AVATAR') return `🎨 프로필 꾸미기 · ${row.avatar_config || ''}`;
       if (act === 'RETURN_OFFICE') return '🏢 사무실 복귀 · Regreso a oficina';
-      if (act === 'QUICK_BREAK') return '☕ 잠깐휴식 · Descanso rápido';
+      if (act === 'QUICK_BREAK') return '🚽 잠깐휴식 · Descanso rápido';
       if (stObj) {
         return `${stObj.emoji} ${stObj.ko} · ${stObj.es}${row.reason ? ' (' + formatWorkLocationLabel(row.reason) + ')' : ''}${row.bubble ? ' · "' + row.bubble + '"' : ''}`;
       }
@@ -764,7 +764,7 @@
       } else if (actionType === 'studio') {
         openAvatarStudioDirect(memberId);
       } else if (actionType === 'quickReturn') {
-        openLocationPopup(memberId);
+        quickBackToOfficeDirect(memberId);
       } else if (actionType === 'quickBreak') {
         quickBreakDirect(memberId);
       } else if (actionType === 'row_working') {
@@ -1320,7 +1320,7 @@
                   </button>
                 ` : `
                   <button type="button" onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'quickBreak')" class="flex-1 py-1.5 px-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-[11px] font-bold transition truncate">
-                    ☕ ${t('잠깐휴식', 'Descanso')}
+                    🚽 ${t('잠깐휴식', 'Descanso')}
                   </button>
                   <button type="button" onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'status')" class="py-1.5 px-2 rounded-xl bg-white hover:bg-amber-100/70 text-slate-700 border border-slate-200 text-[11px] font-bold transition shrink-0">
                     ${hasPin && !isUnlocked ? '🔒' : '✨'}
@@ -1506,10 +1506,26 @@
       m.reason = t('잠깐휴식', 'Descanso rápido');
       m.returnTime = '';
       localEditGuard[m.id] = Date.now() + 6000;
-      pushLog(m, 'QUICK_BREAK', '☕ 잠깐휴식 · Descanso rápido');
+      pushLog(m, 'QUICK_BREAK', '🚽 잠깐휴식 · Descanso rápido');
       renderAll();
-      showToast(`☕ ${m.name} ${t('잠깐휴식 시작!', 'en descanso rápido')}`);
+      showToast(`🚽 ${m.name} ${t('잠깐휴식 시작!', 'en descanso rápido')}`);
       persistAndSync(m, 'QUICK_BREAK');
+    }
+
+    function quickBackToOfficeDirect(memberId) {
+      const m = members.find(x => x.id === memberId);
+      if (!m) return;
+      commitElapsedTime(m);
+      const qNow = getQuitoNow();
+      m.status = 'working';
+      m.since = qNow.short;
+      m.reason = m.reason && m.reason.includes('·') ? formatWorkLocationLabel(m.reason) : '사무실 · Oficina';
+      m.returnTime = '';
+      localEditGuard[m.id] = Date.now() + 6000;
+      pushLog(m, 'RETURN_OFFICE', '🏢 사무실 복귀 · Regreso a oficina');
+      renderAll();
+      showToast(`🏢 ${m.name} ${t('사무실 복귀 완료!', 'regresó a la oficina')}`);
+      persistAndSync(m, 'RETURN_OFFICE');
     }
 
     function bulkStatus(newStatus) {
