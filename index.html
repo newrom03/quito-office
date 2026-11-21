@@ -545,8 +545,7 @@
       if (!clean) return t('사무실 · Oficina', 'Oficina');
       if (clean.includes('·')) {
         const parts = clean.split('·').map(s => s.trim()).filter(Boolean);
-        const deduped = Array.from(new Set(parts));
-        return deduped.join(' · ');
+        return Array.from(new Set(parts)).join(' · ');
       }
       return clean;
     }
@@ -1243,7 +1242,6 @@
                 </div>
               ` : ''}
 
-              <!-- Header Badge & Actions -->
               <div class="flex items-center justify-between gap-1">
                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold border ${st.badgeBg} truncate">
                   <span>${st.emoji}</span>
@@ -1258,7 +1256,6 @@
                 </div>
               </div>
 
-              <!-- Avatar & Basic Info -->
               <div onclick="requireAuthAndRun('${m.id}', 'status')" class="cursor-pointer flex items-center gap-2.5 min-w-0">
                 <div onclick="event.stopPropagation(); petAvatar(this)" class="relative w-14 h-14 rounded-2xl ${th.avatarBg} border-2 border-white shadow-xs flex items-center justify-center shrink-0 p-1 cursor-pointer hover:scale-105 transition-transform">
                   <div class="w-full h-full anim-float">
@@ -1275,12 +1272,10 @@
                 </div>
               </div>
 
-              <!-- Horizontal Status Buttons Row -->
               <div class="flex items-stretch gap-1 bg-white/75 rounded-2xl p-1 border border-slate-200/80">
                 ${horizontalStatusRowHtml}
               </div>
 
-              <!-- Location Badge Below Buttons -->
               ${m.status === 'working' ? `
                 <div onclick="event.stopPropagation(); requireAuthAndRun('${m.id}', 'row_working')" class="cursor-pointer text-[11px] font-bold text-emerald-800 bg-emerald-100/80 hover:bg-emerald-100 px-2.5 py-1 rounded-xl truncate">
                   📍 ${escapeHtml(workLocText)}
@@ -1292,7 +1287,6 @@
                 </div>
               ` : ''}
 
-              <!-- Bubble Note Below Location -->
               ${m.bubble ? `
                 <div onclick="requireAuthAndRun('${m.id}', 'status')" class="cursor-pointer w-full bg-white/95 border border-slate-200/80 rounded-xl px-2.5 py-1 text-[11px] font-semibold text-slate-700 shadow-2xs truncate">
                   💬 ${escapeHtml(m.bubble)}
@@ -1300,7 +1294,6 @@
               ` : ''}
             </div>
 
-            <!-- Timers & Bottom Actions -->
             <div class="space-y-2">
               <div onclick="requireAuthAndRun('${m.id}', 'status')" class="cursor-pointer bg-white/80 rounded-2xl p-2 border border-slate-200/70 space-y-1">
                 <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] font-bold text-slate-600">
